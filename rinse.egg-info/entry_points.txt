@@ -1,0 +1,3 @@
+[console_scripts]
+rinse = rinse.__main__:main
+

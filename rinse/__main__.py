@@ -18,13 +18,12 @@ if __name__ == '__main__':
 
 # Gather our code in a main() function
 def main(args):
-  #logging.basicConfig(format="%(levelname)s: %(message)s", level=loglevel)
-  
+
   # TODO Replace this with your actual code.
-  print ("Hello there.")
-  #logging.info("You passed an argument.")
-  #logging.debug("Your Argument: %s" % args.argument)
- 
+  print ("Let's give this a try.")
+  from rpy2.rinterface import R_VERSION_BUILD
+  print(R_VERSION_BUILD)
+
 # Standard boilerplate to call the main() function to begin
 # the program.
 if __name__ == '__main__':
@@ -33,12 +32,6 @@ if __name__ == '__main__':
   parser.add_argument("version",
                       help = "select version of R you would like to install.")
   args = parser.parse_args()
-  
-  # Setup logging
-  #if args.verbose:
-  #  loglevel = logging.DEBUG
-  #else:
-  #  loglevel = logging.INFO
   
   main(args)
 

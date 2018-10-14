@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "rinse"
+version = "0.1.0"
+description = "A configurable installer CLI for installing R from source (sudo and non-sudo)."
+authors = ["Your Name <you@example.com>"]
+readme = 'README.md'
+repository = "https://github.com/datasnakes/rinse"
+homepage = "https://github.com/datasnakes/rinse"
+keywords = ['r', 'installation']
+
+[tool.poetry.dependencies]
+python = "3.6"
+click = "^7.0"
+
+[tool.poetry.dev-dependencies]
+
+
+[tool.poetry.scripts]
+rinse = "rinse.rinse:rinse"

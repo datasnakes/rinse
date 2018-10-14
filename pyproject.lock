@@ -1,0 +1,16 @@
+[[package]]
+category = "main"
+description = "Composable command line interface toolkit"
+name = "click"
+optional = false
+platform = "*"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+version = "7.0"
+
+[metadata]
+content-hash = "7ed34261b2dc8cb789eb52a2a4b16b54aa221a32772b3fd2da257c113ad2b32a"
+platform = "*"
+python-versions = "3.6"
+
+[metadata.hashes]
+click = ["2335065e6395b9e67ca716de5f7526736bfa6ceead690adf616d925bdc622b13", "5b94b49521f6456670fdb30cd82a4eca9412788a93fa6dd6df72c94d5a8ff2d7"]

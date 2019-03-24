@@ -17,3 +17,13 @@ class InstallR(object):
         pass
 
 
+class LInstallR(InstallR):
+    pass
+
+
+class MacInstall(InstallR):
+    pass
+
+
+class WInstallR(InstallR):
+    pass

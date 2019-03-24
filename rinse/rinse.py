@@ -1,8 +1,10 @@
 from rinse import installr
 from pkg_resources import resource_filename
+from os import name as osname
+from sys import platform as sysplat
 from os.path import expanduser, abspath
 import click
-from rinse.core import InstallR
+from rinse.core import LInstallR, MacInstall, WInstallR
 
 INSTALLR = resource_filename(installr.__name__, "installr.sh")
 
@@ -26,8 +28,18 @@ def rinse(version, path, repos):
         url = f"{repos}/src/base/R-{major_version}/R-{version}.tar.gz"
     method = None
 
-    rinse = InstallR(path=path, version=version, method=method, url=url)
-    rinse.install()
+    if osname == "posix":
+        if sysplat == "darwin":
+            rinse = MacInstall()
+        elif "linux" in str(sysplat):
+            rinse = LInstallR()
+        else:
+            raise OSError("rinse does not support the %s operating system at this time." % sysplat)
+    elif osname == "nt":
+        if sysplat == "win32":
+            rinse = WInstallR()
+        else:
+            raise OSError("rinse does not support the %s operating system at this time." % sysplat)
 
     # Create temporary directory and files
     # tmp_dir = mkdtemp()

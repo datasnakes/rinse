@@ -33,8 +33,8 @@ class InstallR(object):
 
 class LInstallR(InstallR):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, path, version, repos, method):
+        super().__init__(path=path, version=version, repos=repos, method=method)
 
 
 class MacInstall(InstallR):

@@ -2,11 +2,8 @@ from rinse import installr
 from pkg_resources import resource_filename
 from os import name as osname
 from sys import platform as sysplat
-from os.path import expanduser, abspath
 import click
 from rinse.core import LInstallR, MacInstall, WInstallR
-
-INSTALLR = resource_filename(installr.__name__, "installr.sh")
 
 
 @click.command()
@@ -25,7 +22,8 @@ def rinse(path, version, repos, method):
             rinstall = MacInstall()
             rinstall.raise_error()
         elif "linux" in str(sysplat):
-            rinse = LInstallR()
+            rinstall = LInstallR(path=path, version=version, repos=repos, method=method)
+            rinstall.install()
         else:
             raise OSError("rinse does not support the %s operating system at this time." % sysplat)
     elif osname == "nt":

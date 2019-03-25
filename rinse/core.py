@@ -14,6 +14,7 @@ class InstallR(object):
         self.method = method  # source for now spack for later
         self.name = name
         self.path = Path(path).expanduser().absolute()
+        self.rinse_path = self.path / self.name
         self.install = install
         self.repos = repos
         self.config_file = config_file
@@ -21,7 +22,7 @@ class InstallR(object):
 
         # Initialization step
         self.cookie_jar = Path(resource_filename(cookies.__name__, ''))
-        if self.path / Path(self.name).exists() and init is True:
+        if self.rinse_path.exists() and init is True:
             raise FileExistsError("The rinse path you have set already exists: %s" % self.path)
         elif not self.path.exists() and init is True:
             init_cookie = self.cookie_jar / Path("init")

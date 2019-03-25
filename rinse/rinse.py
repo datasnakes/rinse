@@ -7,22 +7,26 @@ from rinse.core import LInstallR, MacInstall, WInstallR
 
 
 @click.command()
-@click.option("--path", "-p", default="~/.rinse",
-              help="Select an installation path for R.")
+@click.option("--path", "-p", default="~/",
+              help="Select a relative installation path for R.")
 @click.option("--version", "-v", default="latest",
               help="Select the version of R to install.")
 @click.option("--repos", "-r", default="http://cran.rstudio.com")
 @click.option("--source", "method", flag_value="source", default=True)
 @click.option("--spack", "method", flag_value="spack")
 @click.option("--local", "method", flag_value="local")
-def rinse(path, version, repos, method):
+@click.option("--init", "-i", default=False,
+              help="Initialize rinse.")
+@click.option("--name", "-n", default=".rinse",
+              help="Select a name for the installation directory for R.")
+def rinse(path, name, version, repos, method, init):
 
     if osname == "posix":
         if sysplat == "darwin":
             rinstall = MacInstall()
             rinstall.raise_error()
         elif "linux" in str(sysplat):
-            rinstall = LInstallR(path=path, version=version, repos=repos, method=method)
+            rinstall = LInstallR(path=path, version=version, repos=repos, method=method, name=name, init=init)
             rinstall.install()
         else:
             raise OSError("rinse does not support the %s operating system at this time." % sysplat)

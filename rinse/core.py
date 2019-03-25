@@ -1,11 +1,25 @@
-from os.path import expanduser, abspath
+from cookiecutter.main import cookiecutter
+from pathlib import Path
+from pkg_resources import resource_filename
+from rinse import cookies
 
 
 class InstallR(object):
 
-    def __init__(self, path, version, repos, method):
+    def __init__(self, path, version, repos, method, name, init):
         self.method = method  # source for now spack for later
-        self.path = abspath(expanduser(path))
+        self.name = name
+        self.path = Path(path).expanduser().absolute()
+        self.cookie_jar = Path(resource_filename(cookies.__name__, ''))
+
+        if self.path.exists() and init is True:
+            FileExistsError("The rinse path you have set already exists: %s" % self.path)
+        elif not self.path.exists() and init is True:
+            init_cookie = self.cookie_jar / Path("init")
+            e_c = {
+                "rinse_init_dir": self.name
+            }
+            cookiecutter(init_cookie, no_input=True, extra_context=e_c, output_dir=self.path)
         self.version = version
         self.repos = repos
 

@@ -15,18 +15,10 @@ INSTALLR = resource_filename(installr.__name__, "installr.sh")
 @click.option("--version", "-v", default="latest",
               help="Select the version of R to install.")
 @click.option("--repos", "-r", default="http://cran.rstudio.com")
-def rinse(version, path, repos):
-
-    # Normalize paths
-    path = abspath(expanduser(path))
-
-    # Build URL
-    if version == "latest":
-        url = f"{repos}/src/base/R-latest.tar.gz"
-    else:
-        major_version = version[0:1]
-        url = f"{repos}/src/base/R-{major_version}/R-{version}.tar.gz"
-    method = None
+@click.option("--source", "method", flag_value="source", default=True)
+@click.option("--spack", "method", flag_value="spack")
+@click.option("--local", "method", flag_value="local")
+def rinse(path, version, repos, method):
 
     if osname == "posix":
         if sysplat == "darwin":

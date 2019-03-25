@@ -116,8 +116,9 @@ class LInstallR(InstallR):
 
 class MacInstall(InstallR):
 
-    def __init__(self):
-        super().__init__(self)
+    def __init__(self, path, install, repos, method, name, init, config_file, config_help):
+        super().__init__(path=path, install=install, repos=repos, method=method, name=name,
+                         init=init, config_file=config_file, config_help=config_help)
 
     def raise_error(self):
         raise NotImplementedError("Installation of R with rinse on MacOS is not supported at this time.")
@@ -125,8 +126,9 @@ class MacInstall(InstallR):
 
 class WInstallR(InstallR):
 
-    def __init__(self):
-        super().__init__(self)
+    def __init__(self, path, install, repos, method, name, init, config_file, config_help):
+        super().__init__(path=path, install=install, repos=repos, method=method, name=name,
+                         init=init, config_file=config_file, config_help=config_help)
 
     def raise_error(self):
         raise NotImplementedError("Installation of R with rinse on Windows is not supported at this time.")

@@ -33,7 +33,8 @@ def rinse(path, name, install, repos, method, init, config_file, config_help):
         elif "linux" in str(sysplat):
             rinstall = LInstallR(path=path, install=install, repos=repos, method=method, name=name, init=init,
                                  config_file=config_file, config_help=config_help)
-            rinstall.installer()
+            if install is not None:
+                rinstall.installer()
         else:
             raise OSError("rinse does not support the %s operating system at this time." % sysplat)
     elif osname == "nt":

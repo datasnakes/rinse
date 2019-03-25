@@ -28,8 +28,5 @@ python = "*"
 click = "^7.0"
 cookiecutter = "^1.6"
 
-[tool.poetry.dev-dependencies]
-pytest = "^3.5"
-
 [tool.poetry.scripts]
 rinse = 'rinse.rinse:rinse'

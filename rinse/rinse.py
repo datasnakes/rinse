@@ -13,7 +13,7 @@ from rinse.core import LInstallR, MacInstall, WInstallR
 @click.option("--source", "method", flag_value="source", default=True)
 @click.option("--spack", "method", flag_value="spack")
 @click.option("--local", "method", flag_value="local")
-@click.option("--init", "-i", default=False,
+@click.option("--init", "-i", default=False, is_flag=True,
               help="Initialize rinse.")
 @click.option("--name", "-n", default=".rinse",
               help="Select a name for the installation directory for R.")

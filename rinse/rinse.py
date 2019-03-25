@@ -9,7 +9,7 @@ from rinse.core import LInstallR, MacInstall, WInstallR
 @click.command()
 @click.option("--path", "-p", default="~/",
               help="Select a relative installation path for R.")
-@click.option("--version", "-v", default="latest",
+@click.option("--install", default=None,
               help="Select the version of R to install.")
 @click.option("--repos", "-r", default="http://cran.rstudio.com")
 @click.option("--source", "method", flag_value="source", default=True)
@@ -26,8 +26,9 @@ def rinse(path, name, version, repos, method, init):
             rinstall = MacInstall()
             rinstall.raise_error()
         elif "linux" in str(sysplat):
-            rinstall = LInstallR(path=path, version=version, repos=repos, method=method, name=name, init=init)
-            rinstall.install()
+            rinstall = LInstallR(path=path, install=install, repos=repos, method=method, name=name, init=init,
+                                 config_file=config_file, config_help=config_help)
+            rinstall.installer()
         else:
             raise OSError("rinse does not support the %s operating system at this time." % sysplat)
     elif osname == "nt":

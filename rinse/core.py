@@ -6,7 +6,7 @@ from rinse import cookies
 
 class InstallR(object):
 
-    def __init__(self, path, version, repos, method, name, init):
+    def __init__(self, path, install, repos, method, name, init, config_file, config_help):
         self.method = method  # source for now spack for later
         self.name = name
         self.path = Path(path).expanduser().absolute()

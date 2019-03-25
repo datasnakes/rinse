@@ -19,7 +19,14 @@ from rinse.core import LInstallR, MacInstall, WInstallR
               help="Initialize rinse.")
 @click.option("--name", "-n", default=".rinse",
               help="Select a name for the installation directory for R.")
-def rinse(path, name, version, repos, method, init):
+@click.option("--config_file", default=None,
+              help="A text file for sending commands to the configure script that"
+                   "configures R to adapt to many kinds of systems.")
+@click.option("--config_help", default=False,
+              help="Display the help message for configuring R.")
+def rinse(path, name, install, repos, method, init, config_file, config_help):
+    if path != "~/":
+        raise NotImplementedError("Rinse only supports installing into the home directory at this time.")
 
     if osname == "posix":
         if sysplat == "darwin":

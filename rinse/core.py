@@ -32,8 +32,19 @@ class LInstallR(InstallR):
 
 
 class MacInstall(InstallR):
-    pass
+
+    def __init__(self):
+        super().__init__(self)
+
+    def raise_error(self):
+        raise NotImplementedError("Installation of R with rinse on MacOS is not supported at this time.")
 
 
 class WInstallR(InstallR):
-    pass
+
+    def __init__(self):
+        super().__init__(self)
+
+    def raise_error(self):
+        raise NotImplementedError("Installation of R with rinse on Windows is not supported at this time.")
+

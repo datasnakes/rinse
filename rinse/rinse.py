@@ -30,14 +30,16 @@ def rinse(version, path, repos):
 
     if osname == "posix":
         if sysplat == "darwin":
-            rinse = MacInstall()
+            rinstall = MacInstall()
+            rinstall.raise_error()
         elif "linux" in str(sysplat):
             rinse = LInstallR()
         else:
             raise OSError("rinse does not support the %s operating system at this time." % sysplat)
     elif osname == "nt":
         if sysplat == "win32":
-            rinse = WInstallR()
+            rinstall = WInstallR()
+            rinstall.raise_error()
         else:
             raise OSError("rinse does not support the %s operating system at this time." % sysplat)
 

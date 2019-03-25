@@ -1,20 +1,35 @@
 [tool.poetry]
 name = "rinse"
 version = "0.1.0"
+license = "MIT"
 description = "A configurable installer CLI for installing R from source (sudo and non-sudo)."
-authors = ["Your Name <you@example.com>"]
+authors = ["Rob Gilmore <robgilmore127@gmail.com>"]
 readme = 'README.md'
 repository = "https://github.com/datasnakes/rinse"
 homepage = "https://github.com/datasnakes/rinse"
 keywords = ['r', 'installation']
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: System Administrators",
+    "Natural Language :: English",
+    "Programming Language :: Other",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Unix",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: System :: Filesystems"
+    ]
 
 [tool.poetry.dependencies]
-python = "^3.4"
+python = "*"
 click = "^7.0"
 cookiecutter = "^1.6"
 
 [tool.poetry.dev-dependencies]
-
+pytest = "^3.5"
 
 [tool.poetry.scripts]
-rinse = "rinse.rinse:rinse"
+rinse = 'rinse.rinse:rinse'

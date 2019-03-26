@@ -67,7 +67,7 @@ class LInstallR(InstallR):
         # Download the source tarball
         r_src_url = re.get(url=url)
         r_src_path = self.path / self.name / "src" / "cran" / Path(url).name
-        open(str(r_src_path)).write(r_src_url.content)
+        open(str(r_src_path), 'wb').write(r_src_url.content)
 
         # Get directory list before extraction
         bef_list = listdir(str(r_src_path.parent))

@@ -73,8 +73,8 @@ class LInstallR(InstallR):
         bef_list = listdir(str(r_src_path.parent))
 
         # Extract the contents of the source tarball
-        with tarfile.open(str(r_src_path), mode='rb') as r_tar_file:
-            r_tar_file.extractall()
+        with tarfile.open(str(r_src_path)) as r_tar_file:
+            r_tar_file.extractall(path=str(r_src_path.parent))
         # Get directory list after extraction
         aft_list = listdir(str(r_src_path.parent))
         r_extracted = list(set(aft_list).difference(bef_list))[0]

@@ -129,7 +129,7 @@ class LInstallR(InstallR):
         version_name = "R-%s" % version
         if Path(self.bin_path / "R").exists():
             remove(str(self.bin_path / "R"))
-        symlink(str(self.lib_path / version_name / "bin"), str(self.bin_path / "R"))
+        symlink(str(self.lib_path / version_name / "bin" / "R"), str(self.bin_path / "R"))
 
     def clear_tmp_dir(self):
         # Set up the temporary directory for installation

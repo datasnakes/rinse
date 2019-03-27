@@ -1,7 +1,7 @@
 from os import name as osname
 from sys import platform as sysplat
 import click
-from rinse.core import LInstallR, MacInstall, WInstallR
+from rinse.core import LInstallR, MacInstallR, WInstallR
 
 
 @click.command()
@@ -32,7 +32,7 @@ def rinse(install, glbl, repos, method, path, name, init, config_file, config_he
 
     if osname == "posix":
         if sysplat == "darwin":
-            rinstall = MacInstall()
+            rinstall = MacInstallR()
             rinstall.raise_error()
         elif "linux" in str(sysplat):
             rinstall = LInstallR(glbl=glbl, path=path, install=install, repos=repos, method=method, name=name, init=init,

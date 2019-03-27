@@ -22,7 +22,7 @@ from rinse.core import LInstallR, MacInstall, WInstallR
                    "configures R to adapt to many kinds of systems.")
 @click.option("--config_help", default=False,
               help="Display the help message for configuring R.")
-@click.option("--config_clear", default=False,
+@click.option("--config_clear", default=False, is_flag=True,
               help="Remove any files associated with previous attempts to install R.")
 def rinse(path, name, install, repos, method, init, config_file, config_help, config_clear):
     if path != "~/":

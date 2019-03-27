@@ -126,7 +126,8 @@ class LInstallR(InstallR):
         make_tests.wait()
 
     def global_interpreter(self, version):
-        remove(str(self.bin_path / "R"))
+        if Path(self.bin_path / "R").exists():
+            remove(str(self.bin_path / "R"))
         symlink(str(self.lib_path / "R-%s" % version / "bin"), str(self.bin_path / "R"))
 
     def clear_tmp_dir(self):

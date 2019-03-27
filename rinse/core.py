@@ -140,7 +140,7 @@ class LInstallR(InstallR):
             self.tmp_path.mkdir(parents=True)
         elif len(version) >= 1:
             for vrs in version:
-                rmtree(str(self.tmp_path / Path(vrs)))
+                rmtree(str(self.tmp_path / Path("R-%s" % vrs)))
 
     def use_local(self):
         raise NotImplementedError("Local installation is not supported at this time.")

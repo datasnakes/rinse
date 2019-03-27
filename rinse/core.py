@@ -31,7 +31,7 @@ class InstallR(object):
         # Initialization step
         self.cookie_jar = Path(resource_filename(cookies.__name__, ''))
         if self.rinse_path.exists() and init is True:
-            raise FileExistsError("The rinse path you have set already exists: %s" % self.path)
+            raise FileExistsError("The rinse path you have set already exists: %s" % self.rinse_path)
         elif not self.rinse_path.exists():
             if init is True:
                 init_cookie = self.cookie_jar / Path("init")
@@ -130,7 +130,7 @@ class LInstallR(InstallR):
         version_name = "R-%s" % version
         if Path(self.bin_path / "R").exists():
             remove(str(self.bin_path / "R"))
-        symlink(str(self.bin_path / "R"), str(self.lib_path / "cran" / version_name / "bin" / "R"))
+        symlink(str(self.lib_path / "cran" / version_name / "bin" / "R"), str(self.bin_path / "R"))
 
     def clear_tmp_dir(self, version=None):
         # Set up the temporary directory for installation

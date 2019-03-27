@@ -55,8 +55,7 @@ class LInstallR(InstallR):
         super().__init__(path=path, install=install, repos=repos, method=method, name=name, init=init,
                          config_file=config_file, config_help=config_help)
         self.config_clear = config_clear
-        if self.config_clear is not None:
-            self.clear_tmp_dir(version=self.config_clear)
+        self.clear_tmp_dir(version=self.config_clear)
         if glbl is not None:
             self.global_interpreter(version=glbl)
 
@@ -136,11 +135,12 @@ class LInstallR(InstallR):
 
     def clear_tmp_dir(self, version=None):
         # Set up the temporary directory for installation
-        if version is None:
+        if len(version) == 1 and version[0] == "all":
             rmtree(str(self.tmp_path))
             self.tmp_path.mkdir(parents=True)
-        else:
-            rmtree(str(self.tmp_path / Path(version)))
+        elif len(version) >= 1:
+            for vrs in version:
+                rmtree(str(self.tmp_path / Path(vrs)))
 
     def use_local(self):
         raise NotImplementedError("Local installation is not supported at this time.")

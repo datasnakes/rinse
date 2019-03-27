@@ -13,7 +13,7 @@ from rinse.core import LInstallR, MacInstall, WInstallR
 @click.option("--source", "method", flag_value="source", default=True, show_default=True)
 @click.option("--spack", "method", flag_value="spack", show_default=True)
 @click.option("--local", "method", flag_value="local", show_default=True)
-@click.option("--path", "-p", default="~/",
+@click.option("--path", "-p", default="~/.beRi",
               help="Select a relative installation path for rinse.", show_default=True)
 @click.option("--name", "-n", default=".rinse",
               help="Select a name for the installation directory for R.", show_default=True)
@@ -24,7 +24,7 @@ from rinse.core import LInstallR, MacInstall, WInstallR
                    " configures R to adapt to many kinds of systems.", show_default=True)
 @click.option("--config_help", default=False,
               help="Display the help message for configuring R.", show_default=True)
-@click.option("--config_clear", default=False, is_flag=True,
+@click.option("--config_clear", "-c", default=None, multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
 def rinse(install, glbl, repos, method, path, name, init, config_file, config_help, config_clear):
     if path != "~/":

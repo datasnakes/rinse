@@ -137,7 +137,10 @@ class LInstallR(InstallR):
         version_name = "R-%s" % version
         if Path(self.bin_path / "R").exists():
             remove(str(self.bin_path / "R"))
+        if Path(self.bin_path / "Rscript").exists():
+            remove(str(self.bin_path / "Rscript"))
         symlink(str(self.lib_path / "cran" / version_name / "bin" / "R"), str(self.bin_path / "R"))
+        symlink(str(self.lib_path / "cran" / version_name / "bin" / "Rscript", str(self.bin_path / "Rscript")))
 
     def clear_tmp_dir(self, version=None):
         # Set up the temporary directory for installation
@@ -155,7 +158,7 @@ class LInstallR(InstallR):
         raise NotImplementedError("Installation with spack is not supported at this time.")
 
 
-class MacInstall(InstallR):
+class MacInstallR(InstallR):
 
     def __init__(self, path, install, repos, method, name, init, config_file, config_help):
         super().__init__(path=path, install=install, repos=repos, method=method, name=name,

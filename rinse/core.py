@@ -24,12 +24,15 @@ class InstallR(object):
         self.cookie_jar = Path(resource_filename(cookies.__name__, ''))
         if self.rinse_path.exists() and init is True:
             raise FileExistsError("The rinse path you have set already exists: %s" % self.path)
-        elif not self.rinse_path.exists() and init is True:
-            init_cookie = self.cookie_jar / Path("init")
-            e_c = {
-                "rinse_init_dir": self.name
-            }
-            cookiecutter(str(init_cookie), no_input=True, extra_context=e_c, output_dir=str(self.path))
+        elif not self.rinse_path.exists():
+            if init is True:
+                init_cookie = self.cookie_jar / Path("init")
+                e_c = {
+                    "rinse_init_dir": self.name
+                }
+                cookiecutter(str(init_cookie), no_input=True, extra_context=e_c, output_dir=str(self.path))
+            else:
+                raise EnvironmentError("You have not initialized rinse yet.  Please run 'rinse --init' to continue.")
 
 
 class LInstallR(InstallR):

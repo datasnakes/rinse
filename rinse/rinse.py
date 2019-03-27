@@ -7,6 +7,8 @@ from rinse.core import LInstallR, MacInstall, WInstallR
 @click.command()
 @click.option("--install", default=None,
               help="Select the version of R to install.", show_default=True)
+@click.option("--global", "-g", "glbl", default=None,
+              help="Select the version of R available to your global environment.")
 @click.option("--repos", "-r", default="http://cran.rstudio.com")
 @click.option("--source", "method", flag_value="source", default=True, show_default=True)
 @click.option("--spack", "method", flag_value="spack", show_default=True)
@@ -19,12 +21,12 @@ from rinse.core import LInstallR, MacInstall, WInstallR
               help="Initialize rinse using the /<path>/<name>.", show_default=True)
 @click.option("--config_file", default=None,
               help="A text file for sending commands to the configure script that"
-                   "configures R to adapt to many kinds of systems.", show_default=True)
+                   " configures R to adapt to many kinds of systems.", show_default=True)
 @click.option("--config_help", default=False,
               help="Display the help message for configuring R.", show_default=True)
 @click.option("--config_clear", default=False, is_flag=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
-def rinse(path, name, install, repos, method, init, config_file, config_help, config_clear):
+def rinse(install, glbl, repos, method, path, name, init, config_file, config_help, config_clear):
     if path != "~/":
         raise NotImplementedError("Rinse only supports installing into the home directory at this time.")
 
@@ -33,7 +35,7 @@ def rinse(path, name, install, repos, method, init, config_file, config_help, co
             rinstall = MacInstall()
             rinstall.raise_error()
         elif "linux" in str(sysplat):
-            rinstall = LInstallR(path=path, install=install, repos=repos, method=method, name=name, init=init,
+            rinstall = LInstallR(glbl=glbl, path=path, install=install, repos=repos, method=method, name=name, init=init,
                                  config_file=config_file, config_help=config_help, config_clear=config_clear)
             if install is not None:
                 rinstall.installer()

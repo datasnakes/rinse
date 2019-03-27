@@ -1,6 +1,6 @@
 from cookiecutter.main import cookiecutter
 from pathlib import Path
-from os import listdir, chdir, mkdir
+from os import listdir, chdir, mkdir, symlink, remove
 from shutil import rmtree
 from pkg_resources import resource_filename
 from rinse import cookies
@@ -26,6 +26,7 @@ class InstallR(object):
         self.tmp_path = self.rinse_path / "tmp"
         self.src_path = self.rinse_path / "src"
         self.lib_path = self.rinse_path / "lib"
+        self.bin_path = self.rinse_path / "bin"
 
         # Initialization step
         self.cookie_jar = Path(resource_filename(cookies.__name__, ''))
@@ -38,17 +39,23 @@ class InstallR(object):
                     "rinse_init_dir": self.name
                 }
                 cookiecutter(str(init_cookie), no_input=True, extra_context=e_c, output_dir=str(self.path))
+                with open("~/.bash_profile", "a+") as b_prof:
+                    b_prof.write("export PATH=\"%s:$PATH\"" % self.bin_path)
+                prof_proc = sp.Popen(["source ~/.bash_profile"], shell=True)
+                prof_proc.wait()
             else:
                 raise EnvironmentError("You have not initialized rinse yet.  Please run 'rinse --init' to continue.")
 
 
 class LInstallR(InstallR):
 
-    def __init__(self, path, install, repos, method, name, init, config_file, config_help, config_clear):
+    def __init__(self, glbl, path, install, repos, method, name, init, config_file, config_help, config_clear):
         super().__init__(path=path, install=install, repos=repos, method=method, name=name, init=init,
                          config_file=config_file, config_help=config_help)
         if config_clear is True:
             self.clear_tmp_dir()
+        if glbl is not None:
+            self.global_interpreter(version=glbl)
 
     def installer(self):
         if self.method == "source":
@@ -117,6 +124,10 @@ class LInstallR(InstallR):
         make_install.wait()
         make_tests = sp.Popen(['make install-tests'], shell=True)
         make_tests.wait()
+
+    def global_interpreter(self, version):
+        remove(str(self.bin_path / "R"))
+        symlink(str(self.lib_path / "R-%s" % version / "bin"), str(self.bin_path / "R"))
 
     def clear_tmp_dir(self):
         # Set up the temporary directory for installation

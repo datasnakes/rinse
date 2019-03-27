@@ -1,6 +1,6 @@
 from cookiecutter.main import cookiecutter
 from pathlib import Path
-from os import listdir, chdir, mkdir, symlink, remove
+from os import listdir, chdir, mkdir, symlink, remove, environ
 from shutil import rmtree
 from pkg_resources import resource_filename
 from rinse import cookies
@@ -39,11 +39,12 @@ class InstallR(object):
                     "rinse_init_dir": self.name
                 }
                 cookiecutter(str(init_cookie), no_input=True, extra_context=e_c, output_dir=str(self.path))
-                bash_prof = str(Path("~/.bash_profile").expanduser().absolute())
-                with open(bash_prof, "a+") as b_prof:
-                    b_prof.write("export PATH=\"%s:$PATH\"" % self.bin_path)
-                prof_proc = sp.Popen(["source %s" % bash_prof], shell=True)
-                prof_proc.wait()
+                if str(self.bin_path) not in environ["PATH"]:
+                    bash_prof = str(Path("~/.bash_profile").expanduser().absolute())
+                    with open(bash_prof, "a+") as b_prof:
+                        b_prof.write("export PATH=\"%s:$PATH\"" % str(self.bin_path))
+                    prof_proc = sp.Popen(["source %s" % bash_prof], shell=True)
+                    prof_proc.wait()
             else:
                 raise EnvironmentError("You have not initialized rinse yet.  Please run 'rinse --init' to continue.")
 

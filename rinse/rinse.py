@@ -27,7 +27,7 @@ from rinse.core import LInstallR, MacInstall, WInstallR
 @click.option("--config_clear", "-c", default=None, multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
 def rinse(install, glbl, repos, method, path, name, init, config_file, config_help, config_clear):
-    if path != "~/":
+    if path != "~/.beRi":
         raise NotImplementedError("Rinse only supports installing into the home directory at this time.")
 
     if osname == "posix":

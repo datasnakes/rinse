@@ -5,25 +5,25 @@ from rinse.core import LInstallR, MacInstall, WInstallR
 
 
 @click.command()
-@click.option("--path", "-p", default="~/",
-              help="Select a relative installation path for R.")
 @click.option("--install", default=None,
-              help="Select the version of R to install.")
+              help="Select the version of R to install.", show_default=True)
 @click.option("--repos", "-r", default="http://cran.rstudio.com")
-@click.option("--source", "method", flag_value="source", default=True)
-@click.option("--spack", "method", flag_value="spack")
-@click.option("--local", "method", flag_value="local")
-@click.option("--init", "-i", default=False, is_flag=True,
-              help="Initialize rinse.")
+@click.option("--source", "method", flag_value="source", default=True, show_default=True)
+@click.option("--spack", "method", flag_value="spack", show_default=True)
+@click.option("--local", "method", flag_value="local", show_default=True)
+@click.option("--path", "-p", default="~/",
+              help="Select a relative installation path for rinse.", show_default=True)
 @click.option("--name", "-n", default=".rinse",
-              help="Select a name for the installation directory for R.")
+              help="Select a name for the installation directory for R.", show_default=True)
+@click.option("--init", "-i", default=False, is_flag=True,
+              help="Initialize rinse using the /<path>/<name>.", show_default=True)
 @click.option("--config_file", default=None,
               help="A text file for sending commands to the configure script that"
-                   "configures R to adapt to many kinds of systems.")
+                   "configures R to adapt to many kinds of systems.", show_default=True)
 @click.option("--config_help", default=False,
-              help="Display the help message for configuring R.")
+              help="Display the help message for configuring R.", show_default=True)
 @click.option("--config_clear", default=False, is_flag=True,
-              help="Remove any files associated with previous attempts to install R.")
+              help="Remove any files associated with previous attempts to install R.", show_default=True)
 def rinse(path, name, install, repos, method, init, config_file, config_help, config_clear):
     if path != "~/":
         raise NotImplementedError("Rinse only supports installing into the home directory at this time.")

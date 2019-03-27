@@ -24,7 +24,7 @@ from rinse.core import LInstallR, MacInstall, WInstallR
                    " configures R to adapt to many kinds of systems.", show_default=True)
 @click.option("--config_help", default=False,
               help="Display the help message for configuring R.", show_default=True)
-@click.option("--config_clear", "-c", default=None, multiple=True,
+@click.option("--config_clear", "-c", default="all", multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
 def rinse(install, glbl, repos, method, path, name, init, config_file, config_help, config_clear):
     if path != "~/.beRi":

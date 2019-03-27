@@ -101,8 +101,9 @@ class LInstallR(InstallR):
         with tarfile.open(str(r_src_path)) as r_tar_file:
             r_tar_file.extractall(path=str(self.tmp_path))
         # Get directory list after extraction
-
         rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
+        if rinse_bin.exists():
+            rmtree(rinse_bin)
         # Create rinse-bin for the configuration process
         mkdir(str(rinse_bin))
         return rinse_bin
@@ -111,7 +112,8 @@ class LInstallR(InstallR):
         # Set up R_HOME
         r_home_name = Path(rinse_bin).parent.name
         r_home = self.lib_path / "cran" / r_home_name
-        r_home.mkdir()
+        if r_home.exists() is not True:
+            r_home.mkdir()
         if self.config_file:
             with open(self.config_file, 'r') as c_file:
                 config_cmds = c_file.read()

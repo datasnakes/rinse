@@ -89,7 +89,7 @@ class LInstallR(InstallR):
             r_tar_file.extractall(path=str(self.tmp_path))
         # Get directory list after extraction
 
-        rinse_bin = self.tmp_path / listdir(self.tmp_path / "cran")[0] / "rinse-bin"
+        rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
         # Create rinse-bin for the configuration process
         mkdir(str(rinse_bin))
         return rinse_bin

@@ -22,7 +22,9 @@ from rinse.core import LInstallR, MacInstall, WInstallR
                    "configures R to adapt to many kinds of systems.")
 @click.option("--config_help", default=False,
               help="Display the help message for configuring R.")
-def rinse(path, name, install, repos, method, init, config_file, config_help):
+@click.option("--config_clear", default=False,
+              help="Remove any files associated with previous attempts to install R.")
+def rinse(path, name, install, repos, method, init, config_file, config_help, config_clear):
     if path != "~/":
         raise NotImplementedError("Rinse only supports installing into the home directory at this time.")
 
@@ -32,7 +34,7 @@ def rinse(path, name, install, repos, method, init, config_file, config_help):
             rinstall.raise_error()
         elif "linux" in str(sysplat):
             rinstall = LInstallR(path=path, install=install, repos=repos, method=method, name=name, init=init,
-                                 config_file=config_file, config_help=config_help)
+                                 config_file=config_file, config_help=config_help, config_clear=config_clear)
             if install is not None:
                 rinstall.installer()
         else:

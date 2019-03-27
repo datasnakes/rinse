@@ -12,14 +12,20 @@ import subprocess as sp
 class InstallR(object):
 
     def __init__(self, path, install, repos, method, name, init, config_file, config_help):
+        # Create class variables from parameters
         self.method = method  # source for now spack for later
         self.name = name
         self.path = Path(path).expanduser().absolute()
-        self.rinse_path = self.path / self.name
         self.install = install
         self.repos = repos
         self.config_file = config_file
         self.config_help = config_help
+
+        # Rinse path setup
+        self.rinse_path = self.path / self.name
+        self.tmp_path = self.rinse_path / "tmp"
+        self.src_path = self.rinse_path / "src"
+        self.lib_path = self.rinse_path / "lib"
 
         # Initialization step
         self.cookie_jar = Path(resource_filename(cookies.__name__, ''))
@@ -38,9 +44,11 @@ class InstallR(object):
 
 class LInstallR(InstallR):
 
-    def __init__(self, path, install, repos, method, name, init, config_file, config_help):
+    def __init__(self, path, install, repos, method, name, init, config_file, config_help, config_clear):
         super().__init__(path=path, install=install, repos=repos, method=method, name=name, init=init,
                          config_file=config_file, config_help=config_help)
+        if config_clear is True:
+            self.clear_tmp_dir()
 
     def installer(self):
         if self.method == "source":
@@ -70,18 +78,18 @@ class LInstallR(InstallR):
     def source_setup(self, url):
         # Download the source tarball
         r_src_url = re.get(url=url)
-        r_src_path = self.path / self.name / "src" / "cran" / Path(url).name
+        r_src_path = self.src_path / "cran" / Path(url).name
         open(str(r_src_path), 'wb').write(r_src_url.content)
 
         # Check the temp directory
-        r_tmp_path = self.clear_tmp_dir()
+        self.clear_tmp_dir()
 
         # Extract the contents of the source tarball
         with tarfile.open(str(r_src_path)) as r_tar_file:
-            r_tar_file.extractall(path=str(r_tmp_path))
+            r_tar_file.extractall(path=str(self.tmp_path))
         # Get directory list after extraction
 
-        rinse_bin = r_tmp_path / listdir(r_tmp_path)[0] / "rinse-bin"
+        rinse_bin = self.tmp_path / listdir(self.tmp_path / "cran")[0] / "rinse-bin"
         # Create rinse-bin for the configuration process
         mkdir(str(rinse_bin))
         return rinse_bin
@@ -89,7 +97,7 @@ class LInstallR(InstallR):
     def source_configure(self, rinse_bin):
         # Set up R_HOME
         r_home_name = Path(rinse_bin).parent.name
-        r_home = Path(rinse_bin).parent.parent.parent.parent / "lib" / "cran" / r_home_name
+        r_home = self.lib_path / "cran" / r_home_name
         r_home.mkdir()
         if self.config_file:
             with open(self.config_file, 'r') as c_file:
@@ -112,10 +120,8 @@ class LInstallR(InstallR):
 
     def clear_tmp_dir(self):
         # Set up the temporary directory for installation
-        r_tmp_path = self.path / self.name / "tmp" / "cran"
-        rmtree(str(r_tmp_path.parent))
-        r_tmp_path.mkdir(parents=True)
-        return r_tmp_path
+        rmtree(str(self.tmp_path))
+        self.tmp_path.mkdir(parents=True)
 
     def use_local(self):
         raise NotImplementedError("Local installation is not supported at this time.")

@@ -52,8 +52,9 @@ class LInstallR(InstallR):
     def __init__(self, glbl, path, install, repos, method, name, init, config_file, config_help, config_clear):
         super().__init__(path=path, install=install, repos=repos, method=method, name=name, init=init,
                          config_file=config_file, config_help=config_help)
-        if config_clear is True:
-            self.clear_tmp_dir()
+        self.config_clear = config_clear
+        if self.config_clear is not None:
+            self.clear_tmp_dir(version=self.config_clear)
         if glbl is not None:
             self.global_interpreter(version=glbl)
 
@@ -88,8 +89,8 @@ class LInstallR(InstallR):
         r_src_path = self.src_path / "cran" / Path(url).name
         open(str(r_src_path), 'wb').write(r_src_url.content)
 
-        # Check the temp directory
-        self.clear_tmp_dir()
+        # Check the temp directory if necessary
+        self.clear_tmp_dir(version=self.config_clear)
 
         # Extract the contents of the source tarball
         with tarfile.open(str(r_src_path)) as r_tar_file:
@@ -131,10 +132,13 @@ class LInstallR(InstallR):
             remove(str(self.bin_path / "R"))
         symlink(str(self.bin_path / "R"), str(self.lib_path / "cran" / version_name / "bin" / "R"))
 
-    def clear_tmp_dir(self):
+    def clear_tmp_dir(self, version=None):
         # Set up the temporary directory for installation
-        rmtree(str(self.tmp_path))
-        self.tmp_path.mkdir(parents=True)
+        if version is None:
+            rmtree(str(self.tmp_path))
+            self.tmp_path.mkdir(parents=True)
+        else:
+            rmtree(str(self.tmp_path / Path(version)))
 
     def use_local(self):
         raise NotImplementedError("Local installation is not supported at this time.")

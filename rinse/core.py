@@ -41,10 +41,14 @@ class InstallR(object):
                 cookiecutter(str(init_cookie), no_input=True, extra_context=e_c, output_dir=str(self.path))
                 if str(self.bin_path) not in environ["PATH"]:
                     bash_prof = str(Path("~/.bash_profile").expanduser().absolute())
-                    with open(bash_prof, "a+") as b_prof:
-                        b_prof.write("export PATH=\"%s:$PATH\"" % str(self.bin_path))
-                    prof_proc = sp.Popen(["source %s" % bash_prof], shell=True)
-                    prof_proc.wait()
+                    with open(bash_prof, 'r') as prof:
+                        _ = prof.read()
+                        bas_prof_export = "export PATH=\"%s:$PATH\"" % str(self.bin_path)
+                        if bas_prof_export not in _:
+                            with open(bash_prof, "a+") as b_prof:
+                                b_prof.write("export PATH=\"%s:$PATH\"" % str(self.bin_path))
+                            prof_proc = sp.Popen(["source %s" % bash_prof], shell=True)
+                            prof_proc.wait()
             else:
                 raise EnvironmentError("You have not initialized rinse yet.  Please run 'rinse --init' to continue.")
 

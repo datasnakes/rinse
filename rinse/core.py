@@ -1,6 +1,7 @@
 from cookiecutter.main import cookiecutter
 from pathlib import Path
 from os import listdir, chdir, mkdir
+from shutil import rmtree
 from pkg_resources import resource_filename
 from rinse import cookies
 import requests as re
@@ -72,17 +73,15 @@ class LInstallR(InstallR):
         r_src_path = self.path / self.name / "src" / "cran" / Path(url).name
         open(str(r_src_path), 'wb').write(r_src_url.content)
 
-        # Get directory list before extraction
-        bef_list = listdir(str(r_src_path.parent))
+        # Check the temp directory
+        r_tmp_path = self.clear_tmp_dir()
 
         # Extract the contents of the source tarball
         with tarfile.open(str(r_src_path)) as r_tar_file:
-            r_tar_file.extractall(path=str(r_src_path.parent))
+            r_tar_file.extractall(path=str(r_tmp_path))
         # Get directory list after extraction
-        aft_list = listdir(str(r_src_path.parent))
-        r_extracted = list(set(aft_list).difference(bef_list))[0]
-        r_ext_path = r_src_path.parent / Path(r_extracted)
-        rinse_bin = r_ext_path / "rinse-bin"
+
+        rinse_bin = r_tmp_path / listdir(r_tmp_path)[0] / "rinse-bin"
         # Create rinse-bin for the configuration process
         mkdir(str(rinse_bin))
         return rinse_bin
@@ -110,6 +109,13 @@ class LInstallR(InstallR):
         make_install.wait()
         make_tests = sp.Popen(['make install-tests'], shell=True)
         make_tests.wait()
+
+    def clear_tmp_dir(self):
+        # Set up the temporary directory for installation
+        r_tmp_path = self.path / self.name / "tmp" / "cran"
+        rmtree(str(r_tmp_path.parent))
+        r_tmp_path.mkdir(parents=True)
+        return r_tmp_path
 
     def use_local(self):
         raise NotImplementedError("Local installation is not supported at this time.")

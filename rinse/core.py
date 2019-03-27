@@ -139,7 +139,7 @@ class LInstallR(InstallR):
 
     def clear_tmp_dir(self, version=None):
         # Set up the temporary directory for installation
-        if len(version) == 1 and version[0] == "all":
+        if version == "all":
             rmtree(str(self.tmp_path))
             self.tmp_path.mkdir(parents=True)
         elif len(version) >= 1:

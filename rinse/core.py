@@ -56,7 +56,7 @@ class LInstallR(InstallR):
         rinse_bin = self.source_setup(url=url)
         if self.config_help:
             chdir(str(rinse_bin.parent))
-            config_proc = sp.Popen(['./configure', '--help'], shell=True)
+            config_proc = sp.Popen(['./configure --help'], shell=True)
             config_proc.wait(timeout=10)
         else:
             chdir(str(rinse_bin))
@@ -92,20 +92,20 @@ class LInstallR(InstallR):
         if self.config_file:
             with open(self.config_file, 'r') as c_file:
                 config_cmds = c_file.read()
-            config_proc = sp.Popen(['../configure', '--prefix=%s' % str(r_home), config_cmds], shell=True)
+            config_proc = sp.Popen(['../configure --prefix=%s' % str(r_home), config_cmds], shell=True)
             config_proc.wait()
         else:
-            config_proc = sp.Popen(['../configure', '--prefix=%s' % str(r_home)], shell=True)
+            config_proc = sp.Popen(['../configure --prefix=%s' % str(r_home)], shell=True)
             config_proc.wait()
 
     def source_make(self):
         make_proc = sp.Popen(['make'], shell=True)
         make_proc.wait()
-        make_check = sp.Popen(['make', 'check'], shell=True)
+        make_check = sp.Popen(['make check'], shell=True)
         make_check.wait()
-        make_install = sp.Popen(['make', 'install'], shell=True)
+        make_install = sp.Popen(['make install'], shell=True)
         make_install.wait()
-        make_tests = sp.Popen(['make', 'install-tests'], shell=True)
+        make_tests = sp.Popen(['make install-tests'], shell=True)
         make_tests.wait()
 
     def use_local(self):

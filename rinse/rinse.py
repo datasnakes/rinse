@@ -45,7 +45,7 @@ def rinse(ctx, install, glbl, repos, method, path, name, config_file, config_hel
 @click.pass_context
 def init(ctx):
     # Initialize rinse
-    InstallR(path=ctx.obj['path'], name=ctx.obj['name'])
+    InstallR(path=ctx.obj['path'], name=ctx.obj['name'], init=True)
 
 
 @rinse.command()

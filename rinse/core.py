@@ -12,16 +12,10 @@ import subprocess as sp
 class InstallR(object):
 
     def __init__(self, path, name, install=None, repos=None, method=None, init=None, config_file=None, config_help=None):
-        # Create class variables from parameters
-        self.method = method  # source for now spack for later
+        # Rinse path setup
         self.name = name
         self.path = Path(path).expanduser().absolute()
-        self.install = install
-        self.repos = repos
-        self.config_file = config_file
-        self.config_help = config_help
 
-        # Rinse path setup
         self.rinse_path = self.path / self.name
         self.tmp_path = self.rinse_path / "tmp"
         self.src_path = self.rinse_path / "src"
@@ -30,32 +24,44 @@ class InstallR(object):
 
         # Initialization step
         self.cookie_jar = Path(resource_filename(cookies.__name__, ''))
-        if self.rinse_path.exists() and init is True:
-            raise FileExistsError("The rinse path you have set already exists: %s" % self.rinse_path)
+        if init is True:
+            if self.rinse_path.exists():
+                raise FileExistsError("The rinse path you have set already exists: %s" % self.rinse_path)
+            elif not self.rinse_path.exists():
+                self.initial_setup()
         elif not self.rinse_path.exists():
-            if init is True:
-                init_cookie = self.cookie_jar / Path("init")
-                e_c = {
-                    "rinse_init_dir": self.name
-                }
-                cookiecutter(str(init_cookie), no_input=True, extra_context=e_c, output_dir=str(self.path))
-                if str(self.bin_path) not in environ["PATH"]:
-                    bash_prof = str(Path("~/.bash_profile").expanduser().absolute())
-                    with open(bash_prof, 'r') as prof:
-                        _ = prof.read()
-                        bas_prof_export = "export PATH=\"%s:$PATH\"" % str(self.bin_path)
-                        if bas_prof_export not in _:
-                            with open(bash_prof, "a+") as b_prof:
-                                b_prof.write("export PATH=\"%s:$PATH\"" % str(self.bin_path))
-                            prof_proc = sp.Popen(["source %s" % bash_prof], shell=True)
-                            prof_proc.wait()
-            else:
-                raise EnvironmentError("You have not initialized rinse yet.  Please run 'rinse --init' to continue.")
+            raise EnvironmentError("You have not initialized rinse yet.  Please run 'rinse init' to continue.")
+
+        # Create class variables from parameters
+        self.method = method  # source for now spack for later
+        self.install = install
+        self.repos = repos
+        self.config_file = config_file
+        self.config_help = config_help
+
+    def initial_setup(self):
+        # Prepare and run cookiecutter
+        init_cookie = self.cookie_jar / Path("init")
+        e_c = {
+            "rinse_init_dir": self.name
+        }
+        cookiecutter(str(init_cookie), no_input=True, extra_context=e_c, output_dir=str(self.path))
+        # Setup environment variables
+        if str(self.bin_path) not in environ["PATH"]:
+            bash_prof = str(Path("~/.bash_profile").expanduser().absolute())
+            with open(bash_prof, 'r') as prof:
+                _ = prof.read()
+                bas_prof_export = "export PATH=\"%s:$PATH\"" % str(self.bin_path)
+                if bas_prof_export not in _:
+                    with open(bash_prof, "a+") as b_prof:
+                        b_prof.write("export PATH=\"%s:$PATH\"" % str(self.bin_path))
+                    prof_proc = sp.Popen(["source %s" % bash_prof], shell=True)
+                    prof_proc.wait()
 
 
 class LInstallR(InstallR):
 
-    def __init__(self, glbl, path, install, repos, method, name, init, config_file, config_help, config_clear):
+    def __init__(self, glbl, path, install, repos, method, name, config_file, config_help, config_clear, init):
         super().__init__(path=path, install=install, repos=repos, method=method, name=name, init=init,
                          config_file=config_file, config_help=config_help)
         self.config_clear = config_clear

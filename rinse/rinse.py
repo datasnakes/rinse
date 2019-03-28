@@ -1,4 +1,5 @@
 import click
+from os import listdir, chdir, mkdir, symlink, remove, environ
 from rinse.core import InstallR
 from rinse.utils import get_system_installer
 
@@ -27,6 +28,7 @@ def rinse(ctx, install, glbl, repos, method, path, name, config_file, config_hel
     ctx.ensure_object(dict)
     ctx.obj['path'] = path
     ctx.obj['name'] = name
+    ctx.obj['method'] = method
     if path != "~/.beRi":
         raise NotImplementedError("Rinse only supports installing into the home directory at this time.")
 
@@ -34,6 +36,7 @@ def rinse(ctx, install, glbl, repos, method, path, name, config_file, config_hel
     installR = get_system_installer()
     Rhandle = installR(glbl=glbl, path=path, install=install, repos=repos, method=method, name=name,
                        config_file=config_file, config_help=config_help, config_clear=config_clear, init=False)
+    ctx.obj['Rinstall'] = Rhandle
     if install is not None:
         Rhandle.installer()
 
@@ -45,10 +48,18 @@ def init(ctx):
     InstallR(path=ctx.obj['path'], name=ctx.obj['name'], init=True)
 
 
-@rinse.command()
+@rinse.command(context_settings=dict(
+    ignore_unknown_options=True,
+    allow_extra_args=True,
+    help_option_names=['--chelp'],
+))
+@click.argument('configure_opts', nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
-def configure(ctx):
-    pass
+def configure(ctx, configure_opts):
+    Rinstall = ctx.obj['Rinstall']
+    rinse_bin = Rinstall.source_setup()
+    chdir(str(rinse_bin))
+    Rinstall.source_configure(rinse_bin=rinse_bin, configure_opts=configure_opts)
 
 
 @rinse.command()

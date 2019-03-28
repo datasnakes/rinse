@@ -71,31 +71,22 @@ class LInstallR(InstallR):
 
     def installer(self):
         if self.method == "source":
-            self.use_source()
+            rinse_bin = self.source_setup()
+            chdir(str(rinse_bin))
+            self.source_configure(rinse_bin=rinse_bin)
+            self.source_make()
         elif self.method == "spack":
             self.use_spack()
         elif self.method == "local":
             self.use_local()
 
-    def use_source(self):
+    def source_setup(self):
+        # Download the source tarball
         if self.install == "latest":
             url = "%s/src/base/R-latest.tar.gz" % self.repos
         else:
             major_version = self.install[0:1]
             url = "%s/src/base/R-%s/R-%s.tar.gz" % (self.repos, major_version, self.install)
-        # Download, extract, and create a bin for configuring R
-        rinse_bin = self.source_setup(url=url)
-        if self.config_help:
-            chdir(str(rinse_bin.parent))
-            config_proc = sp.Popen(['./configure --help'], shell=True)
-            config_proc.wait(timeout=10)
-        else:
-            chdir(str(rinse_bin))
-            self.source_configure(rinse_bin=rinse_bin)
-            self.source_make()
-
-    def source_setup(self, url):
-        # Download the source tarball
         r_src_url = re.get(url=url)
         r_src_path = self.src_path / "cran" / Path(url).name
         open(str(r_src_path), 'wb').write(r_src_url.content)
@@ -114,16 +105,17 @@ class LInstallR(InstallR):
         mkdir(str(rinse_bin))
         return rinse_bin
 
-    def source_configure(self, rinse_bin):
+    def source_configure(self, rinse_bin, configure_opts=None):
         # Set up R_HOME
         r_home_name = Path(rinse_bin).parent.name
         r_home = self.lib_path / "cran" / r_home_name
         if r_home.exists() is not True:
             r_home.mkdir()
-        if self.config_file:
-            with open(self.config_file, 'r') as c_file:
-                config_cmds = c_file.read()
-            config_proc = sp.Popen(['../configure --prefix=%s' % str(r_home), config_cmds], shell=True)
+        if configure_opts == "--help":
+            config_proc = sp.Popen(['../configure --help'], shell=True)
+            config_proc.wait()
+        elif isinstance(configure_opts, str) and len(configure_opts) > 0:
+            config_proc = sp.Popen(['../configure --prefix=%s' % str(r_home), configure_opts], shell=True)
             config_proc.wait()
         else:
             config_proc = sp.Popen(['../configure --prefix=%s' % str(r_home)], shell=True)

@@ -28,8 +28,9 @@ from rinse.core import InstallR, LInstallR, MacInstallR, WInstallR
               help="Remove any files associated with previous attempts to install R.", show_default=True)
 @click.pass_context
 def rinse(ctx, install, glbl, repos, method, path, name, config_file, config_help, config_clear):
-    ctx['path'] = path
-    ctx['name'] = name
+    ctx.ensure_object(dict)
+    ctx.obj['path'] = path
+    ctx.obj['name'] = name
     if path != "~/.beRi":
         raise NotImplementedError("Rinse only supports installing into the home directory at this time.")
 
@@ -56,7 +57,7 @@ def rinse(ctx, install, glbl, repos, method, path, name, config_file, config_hel
 @click.pass_context
 def init(ctx):
     # Initialize rinse
-    InstallR(path=ctx['path'], name=ctx['name'])
+    InstallR(path=ctx.obj['path'], name=ctx.obj['name'])
 
 
 @rinse.command()

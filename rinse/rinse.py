@@ -36,7 +36,7 @@ def rinse(ctx, install, glbl, repos, method, path, name, config_file, config_hel
     # Get the system dependent installation class
     installR = get_system_installer()
     Rhandle = installR(glbl=glbl, path=path, install=install, repos=repos, method=method, name=name,
-                       config_file=config_file, config_help=config_help, config_clear=config_clear)
+                       config_file=config_file, config_help=config_help, config_clear=config_clear, init=False)
     if install is not None:
         Rhandle.installer()
 

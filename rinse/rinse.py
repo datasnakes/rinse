@@ -1,7 +1,6 @@
 import click
 from rinse.core import InstallR
 from rinse.utils import get_system_installer
-import subprocess as sp
 
 @click.group()
 @click.option("--install", default=None,
@@ -16,8 +15,6 @@ import subprocess as sp
               help="Select a relative installation path for rinse.", show_default=True)
 @click.option("--name", "-n", default=".rinse",
               help="Select a name for the installation directory for R.", show_default=True)
-# @click.option("--init", "-i", default=False, is_flag=True,
-#             help="Initialize rinse using the /<path>/<name>.", show_default=True)
 @click.option("--config_file", default=None,
               help="A text file for sending commands to the configure script that"
                    " configures R to adapt to many kinds of systems.", show_default=True)
@@ -46,6 +43,18 @@ def rinse(ctx, install, glbl, repos, method, path, name, config_file, config_hel
 def init(ctx):
     # Initialize rinse
     InstallR(path=ctx.obj['path'], name=ctx.obj['name'], init=True)
+
+
+@rinse.command()
+@click.pass_context
+def configure(ctx):
+    pass
+
+
+@rinse.command()
+@click.pass_context
+def make(ctx):
+    pass
 
 
 @rinse.command()

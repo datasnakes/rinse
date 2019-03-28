@@ -1,10 +1,10 @@
 from os import name as osname
 from sys import platform as sysplat
 import click
-from rinse.core import LInstallR, MacInstallR, WInstallR
+from rinse.core import InstallR, LInstallR, MacInstallR, WInstallR
 
 
-@click.command()
+@click.group()
 @click.option("--install", default=None,
               help="Select the version of R to install.", show_default=True)
 @click.option("--global", "-g", "glbl", default=None,
@@ -17,8 +17,8 @@ from rinse.core import LInstallR, MacInstallR, WInstallR
               help="Select a relative installation path for rinse.", show_default=True)
 @click.option("--name", "-n", default=".rinse",
               help="Select a name for the installation directory for R.", show_default=True)
-@click.option("--init", "-i", default=False, is_flag=True,
-              help="Initialize rinse using the /<path>/<name>.", show_default=True)
+# @click.option("--init", "-i", default=False, is_flag=True,
+#             help="Initialize rinse using the /<path>/<name>.", show_default=True)
 @click.option("--config_file", default=None,
               help="A text file for sending commands to the configure script that"
                    " configures R to adapt to many kinds of systems.", show_default=True)
@@ -26,7 +26,10 @@ from rinse.core import LInstallR, MacInstallR, WInstallR
               help="Display the help message for configuring R.", show_default=True)
 @click.option("--config_clear", "-c", default=list(["all"]), multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
-def rinse(install, glbl, repos, method, path, name, init, config_file, config_help, config_clear):
+@click.pass_context
+def rinse(ctx, install, glbl, repos, method, path, name, init, config_file, config_help, config_clear):
+    ctx['path'] = path
+    ctx['name'] = name
     if path != "~/.beRi":
         raise NotImplementedError("Rinse only supports installing into the home directory at this time.")
 
@@ -48,3 +51,15 @@ def rinse(install, glbl, repos, method, path, name, init, config_file, config_he
         else:
             raise OSError("rinse does not support the %s operating system at this time." % sysplat)
 
+
+@rinse.command(help="Initialize rinse using the /<path>/<name>.")
+@click.pass_context
+def init(ctx):
+    # Initialize rinse
+    InstallR(path=ctx['path'], name=ctx['name'])
+
+
+@rinse.command()
+@click.pass_context
+def install(ctx):
+    pass

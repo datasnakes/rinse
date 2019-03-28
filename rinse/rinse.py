@@ -27,7 +27,7 @@ from rinse.core import InstallR, LInstallR, MacInstallR, WInstallR
 @click.option("--config_clear", "-c", default=list(["all"]), multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
 @click.pass_context
-def rinse(ctx, install, glbl, repos, method, path, name, init, config_file, config_help, config_clear):
+def rinse(ctx, install, glbl, repos, method, path, name, config_file, config_help, config_clear):
     ctx['path'] = path
     ctx['name'] = name
     if path != "~/.beRi":

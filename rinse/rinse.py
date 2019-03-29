@@ -49,7 +49,7 @@ def init(ctx):
               help="Do not run 'make' on configured source files.")
 @click.option("--check", default=False, is_flag=True, show_default=True,
               help="Run 'make check' on configured source files.")
-@click.option("--install", "installer", default=False, is_flag=True, show_defaults=True,
+@click.option("--install", "installer", default=False, is_flag=True, show_default=True,
               help="Run 'make install' on configured source files.")
 @click.option("--install-info", default=False, is_flag=True, show_default=True,
               help="Run 'make install-info' on configured source files.")
@@ -91,7 +91,7 @@ def configure(ctx, version, clear):
               help="Do not run 'make' on configured source files.")
 @click.option("--check", default=False, is_flag=True, show_default=True,
               help="Run 'make check' on configured source files.")
-@click.option("--install", "installer", default=False, is_flag=True, show_defaults=True,
+@click.option("--install", "installer", default=False, is_flag=True, show_default=True,
               help="Run 'make install' on configured source files.")
 @click.option("--install-info", default=False, is_flag=True, show_default=True,
               help="Run 'make install-info' on configured source files.")

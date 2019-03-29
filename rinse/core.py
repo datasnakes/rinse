@@ -143,6 +143,19 @@ class LinuxInstallR(BaseInstallR):
             make_tests = sp.Popen(['make install-tests'], shell=True)
             make_tests.wait()
 
+    def source_test(self, check, check_devel, check_all):
+        rinse_bin_tests = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin" / "tests"
+        chdir(str(rinse_bin_tests))
+        if check:
+            test_check = sp.Popen(["../bin/R CMD make check"], shell=True)
+            test_check.wait()
+        if check_devel:
+            test_check_devel = sp.Popen(["../bin/R CMD make check-devel"], shell=True)
+            test_check_devel.wait()
+        if check_all:
+            test_check_all = sp.Popen(["../bin/R CMD make check-all"], shell=True)
+            test_check_all.wait()
+
     def global_interpreter(self, version):
         version_name = "R-%s" % version
         if Path(self.bin_path / "R").exists():

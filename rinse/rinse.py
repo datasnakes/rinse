@@ -57,11 +57,23 @@ def init(ctx):
               help="Run 'make install-pdf' on configured source files.")
 @click.option("--install-tests", default=False, is_flag=True, show_default=True,
               help="Run 'make install-tests' on configured source files.")
+@click.option("--test-check", default=False, is_flag=True, show_default=True,
+              help="Run 'make check' on test files.")
+@click.option("--test-check-devel", default=False, is_flag=True, show_default=True,
+              help="Run 'make check-devel' on test files.")
+@click.option("--test-check-all", default=False, is_flag=True, show_default=True,
+              help="Run 'make check-all' on test files.")
 @click.pass_context
-def install(ctx, version, clear, without_make, check, installer, install_info, install_pdf, install_tests):
+def install(ctx, version, clear, without_make, check, installer, install_info, install_pdf, install_tests,
+            test_check, test_check_devel, test_check_all):
+    # Configure
     ctx.invoke(configure, version=version, clear=clear)
+    # Install
     ctx.invoke(make, version=version, clear=clear, without_make=without_make, check=check, install=installer,
                install_info=install_info, install_pdf=install_pdf, install_tests=install_tests)
+    # Test Installation
+    ctx.invoke(test, version=version, clear=clear, check=test_check, check_devel=test_check_devel,
+               check_all=test_check_all)
 
 
 @rinse.command(context_settings=dict(
@@ -109,9 +121,21 @@ def make(ctx, without_make, version, clear, check, installer, install_info, inst
 
 
 @rinse.command()
+@click.argument('version', default="latest")
+@click.option("--clear", "-c", default=list(["all"]), multiple=True,
+              help="Remove any files associated with previous attempts to install R.", show_default=True)
+@click.option("--check", default=False, is_flag=True, show_default=True,
+              help="Run 'make check' on test files.")
+@click.option("--check-devel", default=False, is_flag=True, show_default=True,
+              help="Run 'make check-devel' on test files.")
+@click.option("--check-all", default=False, is_flag=True, show_default=True,
+              help="Run 'make check-all' on test files.")
 @click.pass_context
-def test(ctx):
-    pass
+def test(ctx, version, clear, check, check_devel, check_all):
+    installR = ctx.obj['installR']
+    installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'], method="source",
+                        repos=ctx.obj['repos'], config_clear=clear, config_keep=version, glbl=None, init=False)
+    installR.source_test(check=check, check_devel=check_devel, check_all=check_all)
 
 
 @rinse.command(name="global")

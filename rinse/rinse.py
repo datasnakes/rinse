@@ -78,7 +78,7 @@ def configure(ctx, configure_opts):
 
     installR = ctx.obj['installR']
     installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'], method="source",
-                        repos=ctx.obj['repos'], config_clear=ctx.obj['clear'])
+                        repos=ctx.obj['repos'], config_clear=ctx.obj['clear'], glbl=None, init=False)
     src_file_path = installR.source_download()
     rinse_bin = installR.source_setup(src_file_path=src_file_path)
     chdir(str(rinse_bin))

@@ -76,7 +76,7 @@ def configure(ctx, version, clear):
 @click.option("--clear", "-c", default=list(["all"]), multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
 @click.option("--check")
-@click.option("--install", name="installer")
+@click.option("--install", "installer")
 @click.option("--install-info")
 @click.option("--install-pdf")
 @click.option("--install-tests")
@@ -87,6 +87,7 @@ def make(ctx, version, clear, check, installer, install_info, install_pdf, insta
                         repos=ctx.obj['repos'], config_clear=clear, config_keep=version, glbl=None, init=False)
     installR.source_make(check=check, install=installer, install_info=install_info, install_pdf=install_pdf,
                          install_tests=install_tests)
+
 
 @rinse.command()
 @click.pass_context

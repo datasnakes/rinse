@@ -46,9 +46,9 @@ def init(ctx):
               help="Remove any files associated with previous attempts to install R.", show_default=True)
 @click.option("--without-make", default=False, is_flag=True, show_default=True,
               help="Do not run 'make' on configured source files.")
-@click.option("--check", default=False, is_flag=True, show_default=True,
+@click.option("--without-check", "check", default=True, is_flag=True, show_default=True,
               help="Run 'make check' on configured source files.")
-@click.option("--install", "installer", default=False, is_flag=True, show_default=True,
+@click.option("--without-install", "installer", default=True, is_flag=True, show_default=True,
               help="Run 'make install' on configured source files.")
 @click.option("--install-info", default=False, is_flag=True, show_default=True,
               help="Run 'make install-info' on configured source files.")

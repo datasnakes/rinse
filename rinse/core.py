@@ -11,7 +11,7 @@ import subprocess as sp
 
 class BaseInstallR(object):
 
-    def __init__(self, path, name, install=None, repos=None, method=None, init=None, config_file=None, config_help=None):
+    def __init__(self, path, name, version=None, repos=None, method=None, init=None):
         # Rinse path setup
         self.name = name
         self.path = Path(path).expanduser().absolute()
@@ -34,10 +34,8 @@ class BaseInstallR(object):
 
         # Create class variables from parameters
         self.method = method  # source for now spack for later
-        self.install = install
+        self.version = version
         self.repos = repos
-        self.config_file = config_file
-        self.config_help = config_help
 
     def initial_setup(self):
         # Prepare and run cookiecutter
@@ -61,9 +59,8 @@ class BaseInstallR(object):
 
 class LinuxInstallR(BaseInstallR):
 
-    def __init__(self, glbl, path, install, repos, method, name, config_file, config_help, config_clear, init):
-        super().__init__(path=path, install=install, repos=repos, method=method, name=name, init=init,
-                         config_file=config_file, config_help=config_help)
+    def __init__(self, version, method, name, path, repos, glbl, config_clear, init):
+        super().__init__(path=path, version=version, repos=repos, method=method, name=name, init=init)
         self.config_clear = config_clear
         self.clear_tmp_dir(version=self.config_clear)
         if glbl is not None:
@@ -71,7 +68,8 @@ class LinuxInstallR(BaseInstallR):
 
     def installer(self):
         if self.method == "source":
-            rinse_bin = self.source_setup()
+            src_file_path = self.source_download()
+            rinse_bin = self.source_setup(src_file_path=src_file_path)
             chdir(str(rinse_bin))
             self.source_configure(rinse_bin=rinse_bin)
             self.source_make()
@@ -80,28 +78,29 @@ class LinuxInstallR(BaseInstallR):
         elif self.method == "local":
             self.use_local()
 
-    def source_setup(self):
+    def source_download(self):
         # Download the source tarball
-        if self.install == "latest":
+        if self.version == "latest":
             url = "%s/src/base/R-latest.tar.gz" % self.repos
         else:
-            major_version = self.install[0:1]
-            url = "%s/src/base/R-%s/R-%s.tar.gz" % (self.repos, major_version, self.install)
-        r_src_url = re.get(url=url)
-        r_src_path = self.src_path / "cran" / Path(url).name
-        open(str(r_src_path), 'wb').write(r_src_url.content)
+            major_version = self.version[0:1]
+            url = "%s/src/base/R-%s/R-%s.tar.gz" % (self.repos, major_version, self.version)
+        src_file_url = re.get(url=url)
+        src_file_path = self.src_path / "cran" / Path(url).name
+        open(str(src_file_path), 'wb').write(src_file_url.content)
+        return src_file_path
 
+    def source_setup(self, src_file_path):
         # Check the temp directory if necessary
         self.clear_tmp_dir(version=self.config_clear)
-
         # Extract the contents of the source tarball
-        with tarfile.open(str(r_src_path)) as r_tar_file:
+        with tarfile.open(str(src_file_path)) as r_tar_file:
             r_tar_file.extractall(path=str(self.tmp_path))
-        # Get directory list after extraction
+
+        # Configure rinse-bin for the configuration process
         rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
         if rinse_bin.exists():
             rmtree(rinse_bin)
-        # Create rinse-bin for the configuration process
         mkdir(str(rinse_bin))
         return rinse_bin
 
@@ -158,9 +157,9 @@ class LinuxInstallR(BaseInstallR):
 
 class MacInstallR(BaseInstallR):
 
-    def __init__(self, path, install, repos, method, name, init, config_file, config_help):
-        super().__init__(path=path, install=install, repos=repos, method=method, name=name,
-                         init=init, config_file=config_file, config_help=config_help)
+    def __init__(self, path, version, repos, method, name, init):
+        super().__init__(path=path, version=version, repos=repos, method=method, name=name,
+                         init=init)
 
     def raise_error(self):
         raise NotImplementedError("Installation of R with rinse on MacOS is not supported at this time.")
@@ -168,9 +167,9 @@ class MacInstallR(BaseInstallR):
 
 class WindowsInstallR(BaseInstallR):
 
-    def __init__(self, path, install, repos, method, name, init, config_file, config_help):
-        super().__init__(path=path, install=install, repos=repos, method=method, name=name,
-                         init=init, config_file=config_file, config_help=config_help)
+    def __init__(self, path, version, repos, method, name, init):
+        super().__init__(path=path, version=version, repos=repos, method=method, name=name,
+                         init=init)
 
     def raise_error(self):
         raise NotImplementedError("Installation of R with rinse on Windows is not supported at this time.")

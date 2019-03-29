@@ -62,7 +62,7 @@ def install(ctx, version):
     allow_extra_args=True,
     help_option_names=['--chelp'],
 ))
-@click.argument('configure_opts', default="latest", nargs=-1, type=click.UNPROCESSED)
+@click.argument('configure_opts', nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
 def configure(ctx, configure_opts):
     if configure_opts == "latest":  # No version is specified via install() or configure()

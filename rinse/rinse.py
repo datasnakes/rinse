@@ -1,5 +1,4 @@
 import click
-from os import listdir, chdir, mkdir, symlink, remove, environ
 from rinse.core import BaseInstallR
 from rinse.utils import get_system_installer
 
@@ -96,7 +95,7 @@ def configure(ctx, version, clear):
 
 
 @rinse.command()
-@click.argument('version', default="latest")
+@click.argument('version')
 @click.option("--clear", "-c", default=list(["all"]), multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
 @click.option("--without-make", default=False, is_flag=True, show_default=True,
@@ -121,7 +120,7 @@ def make(ctx, without_make, version, clear, check, installer, install_info, inst
 
 
 @rinse.command()
-@click.argument('version', default="latest")
+@click.argument('version')
 @click.option("--clear", "-c", default=list(["all"]), multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
 @click.option("--check", default=False, is_flag=True, show_default=True,
@@ -139,6 +138,9 @@ def test(ctx, version, clear, check, check_devel, check_all):
 
 
 @rinse.command(name="global")
+@click.argument('version')
 @click.pass_context
-def _global(ctx):
-    pass
+def _global(ctx, version):
+    installR = ctx.obj['installR']
+    installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'], method="source",
+             repos=ctx.obj['repos'], config_clear=False, config_keep=version, glbl=version, init=False)

@@ -14,12 +14,10 @@ from rinse.utils import get_system_installer
               help="An absolute installation path for rinse.", show_default=True)
 @click.option("--name", "-n", default=".rinse",
               help="A directory name for rinse.", show_default=True)
-# @click.option("--config_clear", "-c", default=list(["all"]), multiple=True,
-#               help="Remove any files associated with previous attempts to install R.", show_default=True)
 @click.option("--repos", "-r", default="http://cran.rstudio.com",
               help="The repository to use for downloading source files.")
 @click.pass_context
-def rinse(ctx, repos, method, path, name, config_clear):
+def rinse(ctx, repos, method, path, name):
     ctx.ensure_object(dict)
     ctx.obj['path'] = path
     ctx.obj['name'] = name
@@ -50,9 +48,12 @@ def _global(ctx):
 # @click.option("--version", default=None,
 #               help="Select the version of R to install.", show_default=True)
 @click.argument('version', default="latest")
+@click.option("--clear", "-c", default=list(["all"]), multiple=True,
+              help="Remove any files associated with previous attempts to install R.", show_default=True)
 @click.pass_context
-def install(ctx, version):
+def install(ctx, version, clear):
     ctx.obj['version'] = version
+    ctx.obj['clear'] = clear
     ctx.invoke(configure, configure_opts=version)
     ctx.invoke(make)
 
@@ -77,7 +78,7 @@ def configure(ctx, configure_opts):
 
     installR = ctx.obj['installR']
     installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'], method="source",
-                        repos=ctx.obj['repos'])
+                        repos=ctx.obj['repos'], config_clear=ctx.obj['clear'])
     src_file_path = installR.source_download()
     rinse_bin = installR.source_setup(src_file_path=src_file_path)
     chdir(str(rinse_bin))

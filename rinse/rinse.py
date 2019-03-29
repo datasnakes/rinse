@@ -44,7 +44,7 @@ def _global(ctx):
     pass
 
 
-@rinse.group()
+@rinse.command()
 # @click.option("--version", default=None,
 #               help="Select the version of R to install.", show_default=True)
 @click.argument('version', default="latest")
@@ -58,24 +58,15 @@ def install(ctx, version, clear):
     ctx.invoke(make)
 
 
-@install.command(context_settings=dict(
+@rinse.command(context_settings=dict(
     ignore_unknown_options=True,
     allow_extra_args=True,
     help_option_names=['--chelp'],
 ))
+@click.argument('version', default="latest")
 @click.argument('configure_opts', nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
-def configure(ctx, configure_opts):
-    if configure_opts == "latest":  # No version is specified via install() or configure()
-        version = configure_opts
-        configure_opts = None
-    elif len(configure_opts) > 6:  # From using configure() via "rinse install configure 3.3.3 --prefix=etc."
-        version = configure_opts[0:5]
-        configure_opts = configure_opts[6:]
-    else:  # From using configure() via "rinse install 3.3.3"
-        version = configure_opts
-        configure_opts = None
-
+def configure(ctx, version, configure_opts):
     installR = ctx.obj['installR']
     installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'], method="source",
                         repos=ctx.obj['repos'], config_clear=ctx.obj['clear'], glbl=None, init=False)

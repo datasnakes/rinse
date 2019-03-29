@@ -47,7 +47,6 @@ def _global(ctx):
 @rinse.command(context_settings=dict(
     ignore_unknown_options=True,
     allow_extra_args=True,
-    help_option_names=['--chelp'],
 ))
 @click.argument('version', default="latest")
 @click.option("--clear", "-c", default=list(["all"]), multiple=True,
@@ -69,10 +68,10 @@ def install(ctx, version, clear):
 @click.argument('version', default="latest")
 @click.option("--clear", "-c", default=list(["all"]), multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
-@click.argument('configure_opts', nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
-def configure(ctx, version, clear, configure_opts):
+def configure(ctx, version, clear):
     installR = ctx.obj['installR']
+    configure_opts = " ".join(ctx.args)
     installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'], method="source",
                         repos=ctx.obj['repos'], config_clear=clear, glbl=None, init=False)
     src_file_path = installR.source_download()

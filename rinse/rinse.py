@@ -51,12 +51,9 @@ def _global(ctx):
 @click.argument('version', default="latest")
 @click.option("--clear", "-c", default=list(["all"]), multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
-@click.argument('configure_opts', nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
 def install(ctx, version, clear):
-    ctx.obj['version'] = version
-    ctx.obj['clear'] = clear
-    ctx.invoke(configure, configure_opts=version)
+    ctx.invoke(configure, version=version, clear=clear)
     ctx.invoke(make)
 
 

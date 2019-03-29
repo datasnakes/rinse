@@ -4,7 +4,7 @@ from rinse.core import BaseInstallR
 from rinse.utils import get_system_installer
 
 
-@click.group()
+@click.group(chain=True)
 # @click.option("--global", "-g", "glbl", default=None,
 #               help="Select the version of R available to your global environment.")
 @click.option("--source", "method", flag_value="source", default=True, show_default=True)
@@ -36,12 +36,6 @@ def rinse(ctx, repos, method, path, name):
 def init(ctx):
     # Initialize rinse
     BaseInstallR(path=ctx.obj['path'], name=ctx.obj['name'], init=True)
-
-
-@rinse.command(name="global")
-@click.pass_context
-def _global(ctx):
-    pass
 
 
 @rinse.command(context_settings=dict(
@@ -78,6 +72,29 @@ def configure(ctx, version, clear):
 
 
 @rinse.command()
+@click.argument('version', default="latest")
+@click.option("--clear", "-c", default=list(["all"]), multiple=True,
+              help="Remove any files associated with previous attempts to install R.", show_default=True)
+@click.option("--check")
+@click.option("--install", name="installer")
+@click.option("--install-info")
+@click.option("--install-pdf")
+@click.option("--install-tests")
 @click.pass_context
-def make(ctx):
+def make(ctx, version, clear, check, installer, install_info, install_pdf, install_tests):
+    installR = ctx.obj['installR']
+    installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'], method="source",
+                        repos=ctx.obj['repos'], config_clear=clear, config_keep=version, glbl=None, init=False)
+    installR.source_make(check=check, install=installer, install_info=install_info, install_pdf=install_pdf,
+                         install_tests=install_tests)
+
+@rinse.command()
+@click.pass_context
+def test(ctx):
+    pass
+
+
+@rinse.command(name="global")
+@click.pass_context
+def _global(ctx):
     pass

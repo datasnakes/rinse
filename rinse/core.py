@@ -120,15 +120,26 @@ class LinuxInstallR(BaseInstallR):
             config_proc = sp.Popen(['../configure --prefix=%s' % str(r_home)], shell=True)
             config_proc.wait()
 
-    def source_make(self):
+    def source_make(self, check, install, install_info, install_pdf, install_tests):
+        rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
+        chdir(str(rinse_bin))
         make_proc = sp.Popen(['make'], shell=True)
         make_proc.wait()
-        make_check = sp.Popen(['make check'], shell=True)
-        make_check.wait()
-        make_install = sp.Popen(['make install'], shell=True)
-        make_install.wait()
-        make_tests = sp.Popen(['make install-tests'], shell=True)
-        make_tests.wait()
+        if check:
+            make_check = sp.Popen(['make check'], shell=True)
+            make_check.wait()
+        if install:
+            make_install = sp.Popen(['make install'], shell=True)
+            make_install.wait()
+        if install_info:
+            make_info = sp.Popen(['make install-info'], shell=True)
+            make_info.wait()
+        if install_pdf:
+            make_pdf = sp.Popen(['make install-pdf'], shell=True)
+            make_pdf.wait()
+        if install_tests:
+            make_tests = sp.Popen(['make install-tests'], shell=True)
+            make_tests.wait()
 
     def global_interpreter(self, version):
         version_name = "R-%s" % version

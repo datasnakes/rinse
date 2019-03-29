@@ -44,12 +44,15 @@ def _global(ctx):
     pass
 
 
-@rinse.command()
-# @click.option("--version", default=None,
-#               help="Select the version of R to install.", show_default=True)
+@rinse.command(context_settings=dict(
+    ignore_unknown_options=True,
+    allow_extra_args=True,
+    help_option_names=['--chelp'],
+))
 @click.argument('version', default="latest")
 @click.option("--clear", "-c", default=list(["all"]), multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
+@click.argument('configure_opts', nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
 def install(ctx, version, clear):
     ctx.obj['version'] = version
@@ -64,12 +67,14 @@ def install(ctx, version, clear):
     help_option_names=['--chelp'],
 ))
 @click.argument('version', default="latest")
+@click.option("--clear", "-c", default=list(["all"]), multiple=True,
+              help="Remove any files associated with previous attempts to install R.", show_default=True)
 @click.argument('configure_opts', nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
-def configure(ctx, version, configure_opts):
+def configure(ctx, version, clear, configure_opts):
     installR = ctx.obj['installR']
     installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'], method="source",
-                        repos=ctx.obj['repos'], config_clear=ctx.obj['clear'], glbl=None, init=False)
+                        repos=ctx.obj['repos'], config_clear=clear, glbl=None, init=False)
     src_file_path = installR.source_download()
     rinse_bin = installR.source_setup(src_file_path=src_file_path)
     chdir(str(rinse_bin))

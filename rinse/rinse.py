@@ -45,10 +45,23 @@ def init(ctx):
 @click.argument('version', default="latest")
 @click.option("--clear", "-c", default=list(["all"]), multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
+@click.option("--without-make", default=False, is_flag=True, show_default=True,
+              help="Do not run 'make' on configured source files.")
+@click.option("--check", default=False, is_flag=True, show_default=True,
+              help="Run 'make check' on configured source files.")
+@click.option("--install", "installer", default=False, is_flag=True, show_defaults=True,
+              help="Run 'make install' on configured source files.")
+@click.option("--install-info", default=False, is_flag=True, show_default=True,
+              help="Run 'make install-info' on configured source files.")
+@click.option("--install-pdf", default=False, is_flag=True, show_default=True,
+              help="Run 'make install-pdf' on configured source files.")
+@click.option("--install-tests", default=False, is_flag=True, show_default=True,
+              help="Run 'make install-tests' on configured source files.")
 @click.pass_context
-def install(ctx, version, clear):
+def install(ctx, version, clear, without_make, check, installer, install_info, install_pdf, install_tests):
     ctx.invoke(configure, version=version, clear=clear)
-    ctx.invoke(make)
+    ctx.invoke(make, version=version, clear=clear, without_make=without_make, check=check, install=installer,
+               install_info=install_info, install_pdf=install_pdf, install_tests=install_tests)
 
 
 @rinse.command(context_settings=dict(
@@ -74,18 +87,25 @@ def configure(ctx, version, clear):
 @click.argument('version', default="latest")
 @click.option("--clear", "-c", default=list(["all"]), multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
-@click.option("--check")
-@click.option("--install", "installer")
-@click.option("--install-info")
-@click.option("--install-pdf")
-@click.option("--install-tests")
+@click.option("--without-make", default=False, is_flag=True, show_default=True,
+              help="Do not run 'make' on configured source files.")
+@click.option("--check", default=False, is_flag=True, show_default=True,
+              help="Run 'make check' on configured source files.")
+@click.option("--install", "installer", default=False, is_flag=True, show_defaults=True,
+              help="Run 'make install' on configured source files.")
+@click.option("--install-info", default=False, is_flag=True, show_default=True,
+              help="Run 'make install-info' on configured source files.")
+@click.option("--install-pdf", default=False, is_flag=True, show_default=True,
+              help="Run 'make install-pdf' on configured source files.")
+@click.option("--install-tests", default=False, is_flag=True, show_default=True,
+              help="Run 'make install-tests' on configured source files.")
 @click.pass_context
-def make(ctx, version, clear, check, installer, install_info, install_pdf, install_tests):
+def make(ctx, without_make, version, clear, check, installer, install_info, install_pdf, install_tests):
     installR = ctx.obj['installR']
     installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'], method="source",
                         repos=ctx.obj['repos'], config_clear=clear, config_keep=version, glbl=None, init=False)
-    installR.source_make(check=check, install=installer, install_info=install_info, install_pdf=install_pdf,
-                         install_tests=install_tests)
+    installR.source_make(without_make=without_make, check=check, install=installer, install_info=install_info,
+                         install_pdf=install_pdf, install_tests=install_tests)
 
 
 @rinse.command()

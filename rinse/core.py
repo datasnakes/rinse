@@ -59,19 +59,18 @@ class BaseInstallR(object):
 
 class LinuxInstallR(BaseInstallR):
 
-    def __init__(self, version, method, name, path, repos, glbl, config_clear, init):
+    def __init__(self, version, method, name, path, repos, glbl, config_clear, config_keep, init):
         super().__init__(path=path, version=version, repos=repos, method=method, name=name, init=init)
         self.config_clear = config_clear
-        self.clear_tmp_dir(version=self.config_clear)
+        self.config_keep = config_keep
         if glbl is not None:
             self.global_interpreter(version=glbl)
 
     def installer(self):
         if self.method == "source":
             src_file_path = self.source_download()
-            rinse_bin = self.source_setup(src_file_path=src_file_path)
-            chdir(str(rinse_bin))
-            self.source_configure(rinse_bin=rinse_bin)
+            self.source_setup(src_file_path=src_file_path)
+            self.source_configure()
             self.source_make()
         elif self.method == "spack":
             self.use_spack()
@@ -104,8 +103,10 @@ class LinuxInstallR(BaseInstallR):
         mkdir(str(rinse_bin))
         return rinse_bin
 
-    def source_configure(self, rinse_bin, configure_opts=None):
+    def source_configure(self, configure_opts=None):
         # Set up R_HOME
+        rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
+        chdir(str(rinse_bin))
         r_home_name = Path(rinse_bin).parent.name
         r_home = self.lib_path / "cran" / r_home_name
         if r_home.exists() is not True:
@@ -150,14 +151,15 @@ class LinuxInstallR(BaseInstallR):
         symlink(str(self.lib_path / "cran" / version_name / "bin" / "R"), str(self.bin_path / "R"))
         symlink(str(self.lib_path / "cran" / version_name / "bin" / "Rscript", str(self.bin_path / "Rscript")))
 
-    def clear_tmp_dir(self, version=None):
+    def clear_tmp_dir(self):
         # Set up the temporary directory for installation
-        if version[0] == "all":
+        if self.config_clear[0] == "all":
             rmtree(str(self.tmp_path))
             self.tmp_path.mkdir(parents=True)
-        elif len(version) >= 1:
-            for vrs in version:
-                rmtree(str(self.tmp_path / Path("R-%s" % vrs)))
+        elif len(self.config_clear) >= 1:
+            for vrs in self.config_clear:
+                if vrs not in self.config_keep:
+                    rmtree(str(self.tmp_path / Path("R-%s" % vrs)))
 
     def use_local(self):
         raise NotImplementedError("Local installation is not supported at this time.")

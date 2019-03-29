@@ -121,11 +121,12 @@ class LinuxInstallR(BaseInstallR):
             config_proc = sp.Popen(['../configure --prefix=%s' % str(r_home)], shell=True)
             config_proc.wait()
 
-    def source_make(self, check, install, install_info, install_pdf, install_tests):
+    def source_make(self, without_make, check, install, install_info, install_pdf, install_tests):
         rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
         chdir(str(rinse_bin))
-        make_proc = sp.Popen(['make'], shell=True)
-        make_proc.wait()
+        if not without_make:
+            make_proc = sp.Popen(['make'], shell=True)
+            make_proc.wait()
         if check:
             make_check = sp.Popen(['make check'], shell=True)
             make_check.wait()

@@ -1,11 +1,9 @@
 import click
 from os import listdir, chdir, mkdir, symlink, remove, environ
-from rinse.core import InstallR
+from rinse.core import BaseInstallR
 from rinse.utils import get_system_installer
 
 @click.group()
-@click.option("--install", default=None,
-              help="Select the version of R to install.", show_default=True)
 @click.option("--global", "-g", "glbl", default=None,
               help="Select the version of R available to your global environment.")
 @click.option("--repos", "-r", default="http://cran.rstudio.com")
@@ -24,7 +22,7 @@ from rinse.utils import get_system_installer
 @click.option("--config_clear", "-c", default=list(["all"]), multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
 @click.pass_context
-def rinse(ctx, install, glbl, repos, method, path, name, config_file, config_help, config_clear):
+def rinse(ctx, glbl, repos, method, path, name, config_file, config_help, config_clear):
     ctx.ensure_object(dict)
     ctx.obj['path'] = path
     ctx.obj['name'] = name
@@ -45,7 +43,7 @@ def rinse(ctx, install, glbl, repos, method, path, name, config_file, config_hel
 @click.pass_context
 def init(ctx):
     # Initialize rinse
-    InstallR(path=ctx.obj['path'], name=ctx.obj['name'], init=True)
+    BaseInstallR(path=ctx.obj['path'], name=ctx.obj['name'], init=True)
 
 
 @rinse.command(context_settings=dict(

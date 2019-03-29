@@ -1,5 +1,5 @@
 from string import Template
-from rinse.core import LInstallR, MacInstallR, WInstallR
+from rinse.core import LinuxInstallR, MacInstallR, WindowsInstallR
 from os import name as osname
 from sys import platform as sysplat
 
@@ -39,13 +39,13 @@ def get_system_installer():
             rinstall = MacInstallR()
             rinstall.raise_error()
         elif "linux" in str(sysplat):
-            return LInstallR
+            return LinuxInstallR
 
         else:
             raise OSError("rinse does not support the %s operating system at this time." % sysplat)
     elif osname == "nt":
         if sysplat == "win32":
-            rinstall = WInstallR()
+            rinstall = WindowsInstallR()
             rinstall.raise_error()
         else:
             raise OSError("rinse does not support the %s operating system at this time." % sysplat)

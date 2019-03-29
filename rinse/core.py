@@ -9,7 +9,7 @@ import tarfile
 import subprocess as sp
 
 
-class InstallR(object):
+class BaseInstallR(object):
 
     def __init__(self, path, name, install=None, repos=None, method=None, init=None, config_file=None, config_help=None):
         # Rinse path setup
@@ -59,7 +59,7 @@ class InstallR(object):
                     prof_proc.wait()
 
 
-class LInstallR(InstallR):
+class LinuxInstallR(BaseInstallR):
 
     def __init__(self, glbl, path, install, repos, method, name, config_file, config_help, config_clear, init):
         super().__init__(path=path, install=install, repos=repos, method=method, name=name, init=init,
@@ -156,7 +156,7 @@ class LInstallR(InstallR):
         raise NotImplementedError("Installation with spack is not supported at this time.")
 
 
-class MacInstallR(InstallR):
+class MacInstallR(BaseInstallR):
 
     def __init__(self, path, install, repos, method, name, init, config_file, config_help):
         super().__init__(path=path, install=install, repos=repos, method=method, name=name,
@@ -166,7 +166,7 @@ class MacInstallR(InstallR):
         raise NotImplementedError("Installation of R with rinse on MacOS is not supported at this time.")
 
 
-class WInstallR(InstallR):
+class WindowsInstallR(BaseInstallR):
 
     def __init__(self, path, install, repos, method, name, init, config_file, config_help):
         super().__init__(path=path, install=install, repos=repos, method=method, name=name,

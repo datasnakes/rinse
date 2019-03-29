@@ -91,7 +91,7 @@ class LinuxInstallR(BaseInstallR):
 
     def source_setup(self, src_file_path):
         # Check the temp directory if necessary
-        self.clear_tmp_dir(version=self.config_clear)
+        self.clear_tmp_dir()
         # Extract the contents of the source tarball
         with tarfile.open(str(src_file_path)) as r_tar_file:
             r_tar_file.extractall(path=str(self.tmp_path))

@@ -24,7 +24,7 @@ class BaseInstallR(object):
 
         # Initialization step
         self.cookie_jar = Path(resource_filename(cookies.__name__, ''))
-        if init is True:
+        if init:
             if self.rinse_path.exists():
                 raise FileExistsError("The rinse path you have set already exists: %s" % self.rinse_path)
             elif not self.rinse_path.exists():

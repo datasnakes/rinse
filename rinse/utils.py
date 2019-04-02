@@ -40,7 +40,6 @@ def get_system_installer():
             rinstall.raise_error()
         elif "linux" in str(sysplat):
             return LinuxInstallR
-
         else:
             raise OSError("rinse does not support the %s operating system at this time." % sysplat)
     elif osname == "nt":

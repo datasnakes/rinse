@@ -36,15 +36,13 @@ def get_system_installer():
     """
     if osname == "posix":
         if sysplat == "darwin":
-            rinstall = MacInstallR()
-            rinstall.raise_error()
+            MacInstallR()
         elif "linux" in str(sysplat):
             return LinuxInstallR
         else:
             raise OSError("rinse does not support the %s operating system at this time." % sysplat)
     elif osname == "nt":
         if sysplat == "win32":
-            rinstall = WindowsInstallR()
-            rinstall.raise_error()
+            WindowsInstallR()
         else:
             raise OSError("rinse does not support the %s operating system at this time." % sysplat)

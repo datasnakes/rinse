@@ -1,51 +1,61 @@
 # rinse
 
-A configurable installer CLI for installing R from source (sudo and non-sudo).
+A configurable installer CLI for installing R.
 
+* __Repos__: CRAN, MRAN, etc.
+* __Methods__: Source, Spack, Local
+* __Permission__: Sudo, Non-sudo
 
-## Usage
+## Installation
+
+Currently rinse is not on PyPi.  For now you will have to do the following:
+
+### Create a new Virutal Environment
+
+Create a VE called `rinse` using your tool of choice:
+
+* pyenv
+* poetry
+* pipenv
+* virtualenv
+* virtualenvwrapper
+* conda
+* pew
+* python -m venv
+
+After making a VE install poetry into it
+
+```console
+[ $ ] python -m venv ~/.env/rinse
+[ $ ] source ~/.env/rinse/bin/activate
+(rinse) [ $ ] pip install poetry
+...
+(rinse) [ $ ] mkdir GitHub; cd Github
+(rinse) [ ~/Github $ ] git clone https://github.com/datasnakes/rinse.git
+(rinse) [ ~/Github $ ] cd rinse
+(rinse) [ ~/Github/rinse $ ] poetry install
+...
+```
+
+### Initialize Rinse
+
+Before you do anyting rinse must be initialized or you will get an error:
+
+```console
+(rinse) [ ~/Github/rinse $ ] rinse init
+```
+
+## Simple Usage
 
 You can install the latest version of R into your home directory with a single short command.
 
 ```console
-rinse
-```
+(rinse) [ ~/Github/rinse $ ] rinse install
+# or
+(rinse) [ ~/Github/rinse $ ] rinse install latest
+# or
+(rinse) [ ~/Github/rinse $ ] rinse install 3.5.3
 
-And rinse will keep you posted on the progress.
-
-```
-Running: bash /tmp/tmpcphk7y1l/script.sh
-Downloading R...
-Extracting R...
-Configuring R...
-Compiling R...
-Installing R...
-```
-
-If you're interested in installing a different version of R in a specific directory, you can do that too!
-
-```console
-rinse --version 3.4.2 --path ~/R-3.4.2
-```
-
-
-## Installation
-
-Until we publish rinse as a Python package, you can install it locally using the following commands. 
-
-```console
-# Install pip
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-python3 get-pip.py --user
-# Install poetry
-pip install --user poetry
-# Install rinse
-wget https://github.com/datasnakes/rinse/archive/master.tar.gz
-tar vxzf master.tar.gz
-cd rinse-master
-poetry install
-poetry build -f wheel
-pip install --user dist/rinse-0.1.0-py3-none-any.whl
 ```
 
 ## Maintainers

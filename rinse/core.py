@@ -59,7 +59,7 @@ class BaseInstallR(object):
                         b_prof.write("export PATH=\"%s:$PATH\"" % str(self.bin_path))
                     cmd = ["source %s" % bash_prof]
                     stdout = system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-                    print(stdout)
+                    print(stdout[0])
 
 
 class LinuxInstallR(BaseInstallR):
@@ -120,15 +120,15 @@ class LinuxInstallR(BaseInstallR):
         if configure_opts == "--help":
             config_proc = ['../configure --help']
             stdout = system_cmd(cmd=config_proc, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-            print(stdout)
+            print(stdout[0])
         elif isinstance(configure_opts, str) and len(configure_opts) > 0:
             config_proc = ['../configure --prefix=%s' % str(r_home), configure_opts]
             stdout = system_cmd(cmd=config_proc, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-            print(stdout)
+            print(stdout[0])
         else:
             config_proc = ['../configure --prefix=%s' % str(r_home)]
             stdout = system_cmd(cmd=config_proc, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-            print(stdout)
+            print(stdout[0])
 
     def source_make(self, without_make, check, install, install_info, install_pdf, install_tests):
         rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
@@ -136,27 +136,27 @@ class LinuxInstallR(BaseInstallR):
         if not without_make:
             make_proc = ['make']
             stdout = system_cmd(cmd=make_proc, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-            print(stdout)
+            print(stdout[0])
         if check:
             make_check = ['make check']
             stdout = system_cmd(cmd=make_check, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-            print(stdout)
+            print(stdout[0])
         if install:
             make_install = ['make install']
             stdout = system_cmd(cmd=make_install, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-            print(stdout)
+            print(stdout[0])
         if install_info:
             make_info = ['make install-info']
             stdout = system_cmd(cmd=make_info, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-            print(stdout)
+            print(stdout[0])
         if install_pdf:
             make_pdf = ['make install-pdf']
             stdout = system_cmd(cmd=make_pdf, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-            print(stdout)
+            print(stdout[0])
         if install_tests:
             make_tests = ['make install-tests']
             stdout = system_cmd(cmd=make_tests, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-            print(stdout)
+            print(stdout[0])
 
     def source_test(self, check, check_devel, check_all):
         rinse_bin_tests = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin" / "tests"
@@ -164,15 +164,15 @@ class LinuxInstallR(BaseInstallR):
         if check:
             test_check = ["../bin/R CMD make check"]
             stdout = system_cmd(cmd=test_check, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-            print(stdout)
+            print(stdout[0])
         if check_devel:
             test_check_devel = ["../bin/R CMD make check-devel"]
             stdout = system_cmd(cmd=test_check_devel, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-            print(stdout)
+            print(stdout[0])
         if check_all:
             test_check_all = ["../bin/R CMD make check-all"]
             stdout = system_cmd(cmd=test_check_all, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-            print(stdout)
+            print(stdout[0])
 
     def global_interpreter(self, version):
         version_name = "R-%s" % version

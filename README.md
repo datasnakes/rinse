@@ -2,9 +2,18 @@
 
 A CLI for installing R.
 
-* __Repos__: CRAN, MRAN, etc.
-* __Installation Methods__: Source, Spack, Local
+Works with:
+
+* __Repos__: CRAN
+* __Installation Methods__: Source
+* __Supported OS__: Linux
 * __Permission Level__: Sudo, Non-sudo
+
+Will work with:
+
+* __Repos__: Microsoft R Open
+* __Installation Methods__: Spack, Local
+* __Supported OS__: MacOS, Windows
 
 ## Installation
 

@@ -34,7 +34,10 @@ class BaseInstallR(object):
 
         # Create class variables from parameters
         self.method = method  # source for now spack for later
-        self.version = version
+        if version == "--help":
+            self.version = "latest"
+        else:
+            self.version = version
         self.repos = repos
 
     def initial_setup(self):

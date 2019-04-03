@@ -68,7 +68,7 @@ def install(ctx, version, clear, without_make, check, installer, install_info, i
     # Configure
     ctx.invoke(configure, version=version, clear=clear)
     # Install
-    ctx.invoke(make, version=version, clear=clear, without_make=without_make, check=check, install=installer,
+    ctx.invoke(make, version=version, clear=clear, without_make=without_make, check=check, installer=installer,
                install_info=install_info, install_pdf=install_pdf, install_tests=install_tests)
     # Test Installation
     ctx.invoke(test, version=version, clear=clear, check=test_check, check_devel=test_check_devel,

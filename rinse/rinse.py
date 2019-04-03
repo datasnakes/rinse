@@ -3,7 +3,7 @@ from rinse.core import BaseInstallR
 from rinse.utils import get_system_installer
 
 
-@click.group(chain=True)
+@click.group()
 # @click.option("--global", "-g", "glbl", default=None,
 #               help="Select the version of R available to your global environment.")
 @click.option("--source", "method", flag_value="source", default=True, show_default=True)

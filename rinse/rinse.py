@@ -46,33 +46,42 @@ def init(ctx):
               help="Remove any files associated with previous attempts to install R.", show_default=True)
 @click.option("--without-make", default=False, is_flag=True, show_default=True,
               help="Do not run 'make' on configured source files.")
-@click.option("--without-check", "check", default=True, is_flag=True, show_default=True,
+@click.option("--without-check", "check", default=True, is_flag=True,
+              show_default=True,
               help="Run 'make check' on configured source files.")
-@click.option("--without-install", "installer", default=True, is_flag=True, show_default=True,
+@click.option("--without-install", "installer", default=True, is_flag=True,
+              show_default=True,
               help="Run 'make install' on configured source files.")
 @click.option("--install-info", default=False, is_flag=True, show_default=True,
               help="Run 'make install-info' on configured source files.")
 @click.option("--install-pdf", default=False, is_flag=True, show_default=True,
               help="Run 'make install-pdf' on configured source files.")
-@click.option("--install-tests", default=False, is_flag=True, show_default=True,
+@click.option("--install-tests", default=False, is_flag=True,
+              show_default=True,
               help="Run 'make install-tests' on configured source files.")
 @click.option("--test-check", default=False, is_flag=True, show_default=True,
               help="Run 'make check' on test files.")
-@click.option("--test-check-devel", default=False, is_flag=True, show_default=True,
+@click.option("--test-check-devel", default=False, is_flag=True,
+              show_default=True,
               help="Run 'make check-devel' on test files.")
-@click.option("--test-check-all", default=False, is_flag=True, show_default=True,
+@click.option("--test-check-all", default=False, is_flag=True,
+              show_default=True,
               help="Run 'make check-all' on test files.")
+@click.option('--verbose', '-v', is_flag=True,
+              help="Show verbose cli output.")
 @click.pass_context
-def install(ctx, version, clear, without_make, check, installer, install_info, install_pdf, install_tests,
-            test_check, test_check_devel, test_check_all):
+def install(ctx, version, clear, without_make, check, installer, install_info,
+            install_pdf, install_tests, test_check, test_check_devel,
+            test_check_all, verbose):
     # Configure
-    ctx.invoke(configure, version=version, clear=clear)
+    ctx.invoke(configure, version=version, clear=clear, verbose=verbose)
     # Install
-    ctx.invoke(make, version=version, clear=clear, without_make=without_make, check=check, installer=installer,
-               install_info=install_info, install_pdf=install_pdf, install_tests=install_tests)
+    ctx.invoke(make, version=version, clear=clear, without_make=without_make,
+               check=check, installer=installer, install_info=install_info,
+               install_pdf=install_pdf, install_tests=install_tests)
     # Test Installation
-    ctx.invoke(test, version=version, clear=clear, check=test_check, check_devel=test_check_devel,
-               check_all=test_check_all)
+    ctx.invoke(test, version=version, clear=clear, check=test_check,
+               check_devel=test_check_devel, check_all=test_check_all)
 
 
 @rinse.command(context_settings=dict(
@@ -85,12 +94,16 @@ def install(ctx, version, clear, without_make, check, installer, install_info, i
               help="Remove any files associated with previous attempts to install R.", show_default=True)
 @click.option("--overwrite-source", default=False,
               help="Download and overwrite the source tarball.", show_default=True)
+@click.option('--verbose', '-v', is_flag=True,
+              help="Show verbose cli output.")
 @click.pass_context
-def configure(ctx, version, clear, overwrite_source):
+def configure(ctx, version, clear, overwrite_source, verbose):
     installR = ctx.obj['installR']
     configure_opts = " ".join(ctx.args)
-    installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'], method="source",
-                        repos=ctx.obj['repos'], config_clear=clear, config_keep=version, glbl=None, init=False)
+    installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'],
+                        method="source", repos=ctx.obj['repos'],
+                        config_clear=clear, config_keep=version,
+                        glbl=None, init=False, verbose=verbose)
     src_file_path = installR.source_download(overwrite=overwrite_source)
     installR.source_setup(src_file_path=src_file_path)
     installR.source_configure(configure_opts=configure_opts)
@@ -112,11 +125,15 @@ def configure(ctx, version, clear, overwrite_source):
               help="Run 'make install-pdf' on configured source files.")
 @click.option("--install-tests", default=False, is_flag=True, show_default=True,
               help="Run 'make install-tests' on configured source files.")
+@click.option('--verbose', '-v', is_flag=True,
+              help="Show verbose cli output.")
 @click.pass_context
-def make(ctx, without_make, version, clear, check, installer, install_info, install_pdf, install_tests):
+def make(ctx, without_make, version, clear, check, installer, install_info, install_pdf, install_tests, verbose):
     installR = ctx.obj['installR']
-    installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'], method="source",
-                        repos=ctx.obj['repos'], config_clear=clear, config_keep=version, glbl=None, init=False)
+    installR = installR(version=version, path=ctx.obj['path'],
+                        name=ctx.obj['name'], method="source", repos=ctx.obj['repos'],
+                        config_clear=clear, config_keep=version, glbl=None,
+                        init=False, verbose=verbose)
     installR.source_make(without_make=without_make, check=check, install=installer, install_info=install_info,
                          install_pdf=install_pdf, install_tests=install_tests)
 
@@ -131,11 +148,14 @@ def make(ctx, without_make, version, clear, check, installer, install_info, inst
               help="Run 'make check-devel' on test files.")
 @click.option("--check-all", default=False, is_flag=True, show_default=True,
               help="Run 'make check-all' on test files.")
+@click.option('--verbose', '-v', is_flag=True,
+              help="Show verbose cli output.")
 @click.pass_context
-def test(ctx, version, clear, check, check_devel, check_all):
+def test(ctx, version, clear, check, check_devel, check_all, verbose):
     installR = ctx.obj['installR']
-    installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'], method="source",
-                        repos=ctx.obj['repos'], config_clear=clear, config_keep=version, glbl=None, init=False)
+    installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'],
+                        method="source", repos=ctx.obj['repos'], config_clear=clear,
+                        config_keep=version, glbl=None, init=False, verbose=verbose)
     installR.source_test(check=check, check_devel=check_devel, check_all=check_all)
 
 
@@ -144,5 +164,6 @@ def test(ctx, version, clear, check, check_devel, check_all):
 @click.pass_context
 def _global(ctx, version):
     installR = ctx.obj['installR']
-    installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'], method="source",
-             repos=ctx.obj['repos'], config_clear=False, config_keep=version, glbl=version, init=False)
+    installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'],
+             method="source", repos=ctx.obj['repos'], config_clear=False,
+             config_keep=version, glbl=version, init=False, verbose=False)

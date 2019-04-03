@@ -8,20 +8,33 @@ import requests as re
 import tarfile
 from rinse.utils import system_cmd
 import subprocess as sp
+import logging
 
 
 class BaseInstallR(object):
 
-    def __init__(self, path, name, version=None, repos=None, method=None, init=None):
+    def __init__(self, path, name, version=None, repos=None, method=None, init=None, verbose=False):
         # Rinse path setup
         self.name = name
         self.path = Path(path).expanduser().absolute()
+        self.verbose = verbose
 
         self.rinse_path = self.path / self.name
         self.tmp_path = self.rinse_path / "tmp"
         self.src_path = self.rinse_path / "src"
         self.lib_path = self.rinse_path / "lib"
         self.bin_path = self.rinse_path / "bin"
+        
+        # Set up logger
+        # Change level of logger based on verbose paramater.
+        if self.verbose:
+            logging.basicConfig(format='[%(levelname)s | %(name)s - line %(lineno)d]: %(message)s')
+            # Filter the debug logging
+            logging.getLogger("rinse").setLevel(logging.DEBUG)
+        else:
+            logging.basicConfig(format='%(levelname)s: %(message)s',
+                                level=logging.INFO)
+        self.logger = logging.getLogger(__name__)
 
         # Initialization step
         self.cookie_jar = Path(resource_filename(cookies.__name__, ''))
@@ -30,6 +43,7 @@ class BaseInstallR(object):
                 raise FileExistsError("The rinse path you have set already exists: %s" % self.rinse_path)
             elif not self.rinse_path.exists():
                 self.initial_setup()
+                self.logger.info("Initializing rinse.")
         elif not self.rinse_path.exists():
             raise EnvironmentError("You have not initialized rinse yet.  Please run 'rinse init' to continue.")
 
@@ -50,6 +64,7 @@ class BaseInstallR(object):
         cookiecutter(str(init_cookie), no_input=True, extra_context=e_c, output_dir=str(self.path))
         # Setup environment variables
         if str(self.bin_path) not in environ["PATH"]:
+            self.logger.info("Setting $PATH.")
             bash_prof = str(Path("~/.bash_profile").expanduser().absolute())
             with open(bash_prof, 'r') as prof:
                 _ = prof.read()
@@ -64,8 +79,8 @@ class BaseInstallR(object):
 
 class LinuxInstallR(BaseInstallR):
 
-    def __init__(self, version, method, name, path, repos, glbl, config_clear, config_keep, init):
-        super().__init__(path=path, version=version, repos=repos, method=method, name=name, init=init)
+    def __init__(self, version, method, name, path, repos, glbl, config_clear, config_keep, init, verbose):
+        super().__init__(path=path, version=version, repos=repos, method=method, name=name, init=init, verbose=verbose)
         self.config_clear = config_clear
         self.config_keep = config_keep
         if glbl is not None:
@@ -86,9 +101,11 @@ class LinuxInstallR(BaseInstallR):
         # Download the source tarball
         if self.version == "latest":
             url = "%s/src/base/R-latest.tar.gz" % self.repos
+            self.logger.info("Downloading the latest R version.")
         else:
             major_version = self.version[0:1]
             url = "%s/src/base/R-%s/R-%s.tar.gz" % (self.repos, major_version, self.version)
+            self.logger.info("Downloading R version %s" % major_version)
         src_file_url = re.get(url=url)
         src_file_path = self.src_path / "cran" / Path(url).name
         if (not src_file_path.exists()) or overwrite:
@@ -100,12 +117,14 @@ class LinuxInstallR(BaseInstallR):
         self.clear_tmp_dir()
         # Extract the contents of the source tarball
         with tarfile.open(str(src_file_path)) as r_tar_file:
+            self.logger.debug("Extracting source tarball.")
             r_tar_file.extractall(path=str(self.tmp_path))
 
         # Configure rinse-bin for the configuration process
         rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
         if rinse_bin.exists():
             rmtree(rinse_bin)
+            self.logger.debug("Removing existing rinse folder.")
         mkdir(str(rinse_bin))
         return rinse_bin
 
@@ -115,7 +134,8 @@ class LinuxInstallR(BaseInstallR):
         chdir(str(rinse_bin))
         r_home_name = Path(rinse_bin).parent.name
         r_home = self.lib_path / "cran" / r_home_name
-        if r_home.exists() is not True:
+        if not r_home.exists():
+            self.logger.debug("Creating R home directory in %s" % r_home)
             r_home.mkdir()
         if configure_opts == "--help":
             config_proc = ['../configure --help']

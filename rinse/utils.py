@@ -58,7 +58,7 @@ def system_cmd(cmd, timeout=None, **kwargs):
     :param kwargs:  Any other keyword arguments for Popen.
     :return:  Returns the stdout and stderr as a tuple.
     """
-    proc = sp.Popen(cmd, **kwargs)
+    proc = sp.Popen(cmd, **kwargs, encoding="utf-8")
     try:
         ret_val = proc.communicate(timeout=timeout)
     except TimeoutExpired:

@@ -2,6 +2,8 @@ from string import Template
 from rinse.core import LinuxInstallR, MacInstallR, WindowsInstallR
 from os import name as osname
 from sys import platform as sysplat
+import subprocess as sp
+from subprocess import TimeoutExpired
 
 
 def import_temp(filepath):
@@ -46,3 +48,22 @@ def get_system_installer():
             WindowsInstallR()
         else:
             raise OSError("rinse does not support the %s operating system at this time." % sysplat)
+
+
+def system_cmd(cmd, timeout=None, **kwargs):
+    """
+    A function for making system calls, while preforming proper exception handling.
+    :param cmd:  A list that contains the arguments for Popen.
+    :param timeout:  A timeout variable.
+    :param kwargs:  Any other keyword arguments for Popen.
+    :return:  Returns the stdout and stderr as a tuple.
+    """
+    proc = sp.Popen(cmd, stderr=sp.PIPE, stdout=sp.PIPE, **kwargs)
+    try:
+        stdout, stderr = proc.communicate(timeout=timeout)
+    except TimeoutExpired:
+        proc.kill()
+        stdout, stderr = proc.communicate()
+    return stdout, stderr
+
+

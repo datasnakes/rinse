@@ -9,19 +9,6 @@ version = "0.13.1"
 [package.dependencies]
 python-dateutil = "*"
 
-[package.dependencies."backports.functools-lru-cache"]
-python = ">=2.7,<2.8"
-version = ">=1.2.1"
-
-[[package]]
-category = "main"
-description = "backports.functools_lru_cache"
-marker = "python_version == \"2.7\""
-name = "backports.functools-lru-cache"
-optional = false
-python-versions = ">=2.6"
-version = "1.5"
-
 [[package]]
 category = "main"
 description = "Ultra-lightweight pure Python package to check if a file is binary or text."
@@ -180,12 +167,11 @@ python-versions = "*"
 version = "0.5.2"
 
 [metadata]
-content-hash = "5dc66c032b40c232c9aa3bb6c458a85e1d7300fbd19cd652bba01936103a2df8"
-python-versions = "*"
+content-hash = "9798539c29bfe618923acd371378e0beb9f0e017a6722179a36a3f02bb985fd7"
+python-versions = ">=3.4"
 
 [metadata.hashes]
 arrow = ["3397e5448952e18e1295bf047014659effa5ae8da6a5371d37ff0ddc46fa6872", "6f54d9f016c0b7811fac9fb8c2c7fa7421d80c54dbdd75ffb12913c55db60b8a"]
-"backports.functools-lru-cache" = ["9d98697f088eb1b0fa451391f91afb5e3ebde16bbdb272819fd091151fda4f1a", "f0b0e4eba956de51238e17573b7087e852dfe9854afd2e9c873f73fc0ca0a6dd"]
 binaryornot = ["359501dfc9d40632edc9fac890e19542db1a287bbcfa58175b66658392018061", "b8b71173c917bddcd2c16070412e369c3ed7f0528926f70cac18a6c97fd563e4"]
 certifi = ["59b7658e26ca9c7339e00f8f4636cdfe59d34fa37b9b04f6f9e9926b3cece1a5", "b26104d6835d1f5e49452a26eb2ff87fe7090b89dfcaee5ea2212697e1e1d7ae"]
 chardet = ["84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae", "fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691"]

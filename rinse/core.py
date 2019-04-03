@@ -80,7 +80,7 @@ class LinuxInstallR(BaseInstallR):
         elif self.method == "local":
             self.use_local()
 
-    def source_download(self):
+    def source_download(self, overwrite):
         # Download the source tarball
         if self.version == "latest":
             url = "%s/src/base/R-latest.tar.gz" % self.repos
@@ -89,7 +89,8 @@ class LinuxInstallR(BaseInstallR):
             url = "%s/src/base/R-%s/R-%s.tar.gz" % (self.repos, major_version, self.version)
         src_file_url = re.get(url=url)
         src_file_path = self.src_path / "cran" / Path(url).name
-        open(str(src_file_path), 'wb').write(src_file_url.content)
+        if (not src_file_path.exists()) or overwrite:
+            open(str(src_file_path), 'wb').write(src_file_url.content)
         return src_file_path
 
     def source_setup(self, src_file_path):

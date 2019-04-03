@@ -83,13 +83,15 @@ def install(ctx, version, clear, without_make, check, installer, install_info, i
 @click.argument('version', default="latest")
 @click.option("--clear", "-c", default=list(["all"]), multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
+@click.option("--overwrite-source", default=False,
+              help="Download and overwrite the source tarball.", show_default=True)
 @click.pass_context
-def configure(ctx, version, clear):
+def configure(ctx, version, clear, overwrite_source):
     installR = ctx.obj['installR']
     configure_opts = " ".join(ctx.args)
     installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'], method="source",
                         repos=ctx.obj['repos'], config_clear=clear, config_keep=version, glbl=None, init=False)
-    src_file_path = installR.source_download()
+    src_file_path = installR.source_download(overwrite=overwrite_source)
     installR.source_setup(src_file_path=src_file_path)
     installR.source_configure(configure_opts=configure_opts)
 

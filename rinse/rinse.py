@@ -40,7 +40,7 @@ def init(ctx):
 @rinse.command(context_settings=dict(
     ignore_unknown_options=True,
     allow_extra_args=True,
-))
+), help="Start a basic installation (e.g. - ./configure; make; make check; make install).")
 @click.argument('version', default="latest")
 @click.option("--clear", "-c", default=list(["all"]), multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
@@ -79,7 +79,7 @@ def install(ctx, version, clear, without_make, check, installer, install_info, i
     ignore_unknown_options=True,
     allow_extra_args=True,
     help_option_names=['--chelp'],
-))
+), help="Start a custom configuration for installing R (e.g. - ./configure --help.")
 @click.argument('version', default="latest")
 @click.option("--clear", "-c", default=list(["all"]), multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
@@ -94,7 +94,7 @@ def configure(ctx, version, clear):
     installR.source_configure(configure_opts=configure_opts)
 
 
-@rinse.command()
+@rinse.command(help="Start running custom make commands for the installation.")
 @click.argument('version')
 @click.option("--clear", "-c", default=list(["all"]), multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
@@ -119,7 +119,7 @@ def make(ctx, without_make, version, clear, check, installer, install_info, inst
                          install_pdf=install_pdf, install_tests=install_tests)
 
 
-@rinse.command()
+@rinse.command(help="Start running various make installation tests.")
 @click.argument('version')
 @click.option("--clear", "-c", default=list(["all"]), multiple=True,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
@@ -137,7 +137,7 @@ def test(ctx, version, clear, check, check_devel, check_all):
     installR.source_test(check=check, check_devel=check_devel, check_all=check_all)
 
 
-@rinse.command(name="global")
+@rinse.command(name="global", help="Switch the global R version.")
 @click.argument('version')
 @click.pass_context
 def _global(ctx, version):

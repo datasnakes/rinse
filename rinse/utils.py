@@ -1,5 +1,6 @@
 from string import Template
 import rinse
+import sys
 from os import name as osname
 from sys import platform as sysplat
 import subprocess as sp
@@ -59,8 +60,13 @@ def system_cmd(cmd, timeout=None, **kwargs):
     :return:  Returns the stdout and stderr as a tuple.
     """
     proc = sp.Popen(cmd, **kwargs, encoding="utf-8")
+    ret_val = []
+    for line in iter(proc.stdout.readline, ""):
+        print(line, end="")
+        ret_val.append(line)
+        sys.stdout.flush()
     try:
-        ret_val = proc.communicate(timeout=timeout)
+        proc.communicate(timeout=timeout)
     except TimeoutExpired:
         proc.kill()
         ret_val = proc.communicate()

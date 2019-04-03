@@ -1,10 +1,10 @@
 # rinse
 
-A configurable installer CLI for installing R.
+A CLI for installing R.
 
 * __Repos__: CRAN, MRAN, etc.
-* __Methods__: Source, Spack, Local
-* __Permission__: Sudo, Non-sudo
+* __Installation Methods__: Source, Spack, Local
+* __Permission Level__: Sudo, Non-sudo
 
 ## Installation
 

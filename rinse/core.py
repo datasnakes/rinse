@@ -7,6 +7,7 @@ from rinse import cookies
 import requests as re
 import tarfile
 from rinse.utils import system_cmd
+import subprocess as sp
 
 
 class BaseInstallR(object):
@@ -57,7 +58,8 @@ class BaseInstallR(object):
                     with open(bash_prof, "a+") as b_prof:
                         b_prof.write("export PATH=\"%s:$PATH\"" % str(self.bin_path))
                     cmd = ["source %s" % bash_prof]
-                    stdout, stderr = system_cmd(cmd=cmd, shell=True)
+                    stdout = system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+                    print(stdout)
 
 
 class LinuxInstallR(BaseInstallR):
@@ -117,48 +119,60 @@ class LinuxInstallR(BaseInstallR):
             r_home.mkdir()
         if configure_opts == "--help":
             config_proc = ['../configure --help']
-            stdout, stderr = system_cmd(cmd=config_proc, shell=True)
+            stdout = system_cmd(cmd=config_proc, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            print(stdout)
         elif isinstance(configure_opts, str) and len(configure_opts) > 0:
             config_proc = ['../configure --prefix=%s' % str(r_home), configure_opts]
-            stdout, stderr = system_cmd(cmd=config_proc, shell=True)
+            stdout = system_cmd(cmd=config_proc, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            print(stdout)
         else:
             config_proc = ['../configure --prefix=%s' % str(r_home)]
-            stdout, stderr = system_cmd(cmd=config_proc, shell=True)
+            stdout = system_cmd(cmd=config_proc, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            print(stdout)
 
     def source_make(self, without_make, check, install, install_info, install_pdf, install_tests):
         rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
         chdir(str(rinse_bin))
         if not without_make:
             make_proc = ['make']
-            stdout, stderr = system_cmd(cmd=make_proc, shell=True)
+            stdout = system_cmd(cmd=make_proc, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            print(stdout)
         if check:
             make_check = ['make check']
-            stdout, stderr = system_cmd(cmd=make_check, shell=True)
+            stdout = system_cmd(cmd=make_check, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            print(stdout)
         if install:
             make_install = ['make install']
-            stdout, stderr = system_cmd(cmd=make_install, shell=True)
+            stdout = system_cmd(cmd=make_install, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            print(stdout)
         if install_info:
             make_info = ['make install-info']
-            stdout, stderr = system_cmd(cmd=make_info, shell=True)
+            stdout = system_cmd(cmd=make_info, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            print(stdout)
         if install_pdf:
             make_pdf = ['make install-pdf']
-            stdout, stderr = system_cmd(cmd=make_pdf, shell=True)
+            stdout = system_cmd(cmd=make_pdf, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            print(stdout)
         if install_tests:
             make_tests = ['make install-tests']
-            stdout, stderr = system_cmd(cmd=make_tests, shell=True)
+            stdout = system_cmd(cmd=make_tests, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            print(stdout)
 
     def source_test(self, check, check_devel, check_all):
         rinse_bin_tests = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin" / "tests"
         chdir(str(rinse_bin_tests))
         if check:
             test_check = ["../bin/R CMD make check"]
-            stdout, stderr = system_cmd(cmd=test_check, shell=True)
+            stdout = system_cmd(cmd=test_check, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            print(stdout)
         if check_devel:
             test_check_devel = ["../bin/R CMD make check-devel"]
-            stdout, stderr = system_cmd(cmd=test_check_devel, shell=True)
+            stdout = system_cmd(cmd=test_check_devel, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            print(stdout)
         if check_all:
             test_check_all = ["../bin/R CMD make check-all"]
-            stdout, stderr = system_cmd(cmd=test_check_all, shell=True)
+            stdout = system_cmd(cmd=test_check_all, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            print(stdout)
 
     def global_interpreter(self, version):
         version_name = "R-%s" % version

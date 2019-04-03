@@ -2,7 +2,7 @@
 
 A CLI for installing R.
 
-Works with:
+Currently works with:
 
 * __Repos__: CRAN
 * __Installation Methods__: Source

@@ -56,7 +56,7 @@ Before you do anyting rinse must be initialized or you will get an error:
 
 ## Simple Usage
 
-You can install the latest version of R into your home directory with a single short command.
+You can install the latest version of R into your home directory with a single short command:
 
 ```console
 (rinse) [ ~/Github/rinse $ ] rinse install
@@ -65,6 +65,25 @@ You can install the latest version of R into your home directory with a single s
 # or
 (rinse) [ ~/Github/rinse $ ] rinse install 3.5.3
 
+```
+
+## Alternate Usage
+
+First note:
+
+```console
+(rinse) [ ~/Github/rinse $ ] rinse configure --help # configure script help (./configure --help)
+# is different from
+(rinse) [ ~/Github/rinse $ ] rinse configure --chelp # rinse cli help
+```
+
+Here's how you can work through various installation steps:
+```console
+(rinse) [ ~/Github/rinse $ ] rinse configure 3.5.3
+(rinse) [ ~/Github/rinse $ ] rinse make --check 3.5.3
+(rinse) [ ~/Github/rinse $ ] rinse make --install 3.5.3 
+(rinse) [ ~/Github/rinse $ ] rinse make --install-tests 3.5.3
+(rinse) [ ~/Github/rinse $ ] rinse test --check --check-devel --check-all 3.5.3
 ```
 
 ## Maintainers

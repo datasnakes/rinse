@@ -183,12 +183,12 @@ class LinuxInstallR(BaseInstallR):
 
     def global_interpreter(self, version):
         version_name = "R-%s" % version
-        if Path(self.bin_path / "R").exists():
+        if Path(self.bin_path / "R").is_symlink():
             remove(str(self.bin_path / "R"))
-        if Path(self.bin_path / "Rscript").exists():
+        if Path(self.bin_path / "Rscript").is_symlink():
             remove(str(self.bin_path / "Rscript"))
-        symlink(str(self.lib_path / "cran" / version_name / "bin" / "R"), str(self.bin_path / "R"))
-        symlink(str(self.lib_path / "cran" / version_name / "bin" / "Rscript", str(self.bin_path / "Rscript")))
+        Path(self.bin_path / "R").symlink_to(self.lib_path / "cran" / version_name / "bin" / "R")
+        Path(self.bin_path / "Rscript").symlink_to(self.lib_path / "cran" / version_name / "bin" / "Rscript")
 
     def clear_tmp_dir(self):
         # Set up the temporary directory for installation

@@ -187,8 +187,13 @@ class LinuxInstallR(BaseInstallR):
             remove(str(self.bin_path / "R"))
         if Path(self.bin_path / "Rscript").is_symlink():
             remove(str(self.bin_path / "Rscript"))
-        Path(self.bin_path / "R").symlink_to(self.lib_path / "cran" / version_name / "bin" / "R")
-        Path(self.bin_path / "Rscript").symlink_to(self.lib_path / "cran" / version_name / "bin" / "Rscript")
+        if Path(self.lib_path / "cran" / version_name / "bin" / "R").exists() or \
+                Path(self.lib_path / "cran" / version_name / "bin" / "Rscript").exists():
+            Path(self.bin_path / "R").symlink_to(self.lib_path / "cran" / version_name / "bin" / "R")
+            Path(self.bin_path / "Rscript").symlink_to(self.lib_path / "cran" / version_name / "bin" / "Rscript")
+        else:
+            self.logger.info("The version of R you are looking for does not exist yet.")
+            raise FileNotFoundError
 
     def clear_tmp_dir(self):
         # Set up the temporary directory for installation

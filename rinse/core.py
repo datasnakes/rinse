@@ -64,15 +64,26 @@ class BaseInstallR(object):
         cookiecutter(str(init_cookie), no_input=True, extra_context=e_c, output_dir=str(self.path))
         # Setup environment variables
         if str(self.bin_path) not in environ["PATH"]:
-            self.logger.info("Setting $PATH.")
-            bash_prof = str(Path("~/.bash_profile").expanduser().absolute())
-            with open(bash_prof, 'r') as prof:
+            # See if .bash_profile or .profile exists
+            bash_prof = Path("~/.bash_profile").expanduser().absolute()
+            sh_prof = Path("~/.profile").expanduser().absolute()
+            if not bash_prof.exists():
+                if not sh_prof.exists():
+                    bash_prof.touch(mode=0o700)
+                    set_prof = bash_prof
+                else:
+                    set_prof = sh_prof
+            else:
+                set_prof = bash_prof
+            self.logger.info("Setting the PATH in %s" % str(set_prof))
+            # Use the set .*profile to append to PATH
+            with open(str(set_prof), 'r') as prof:
                 _ = prof.read()
                 bas_prof_export = "export PATH=\"%s:$PATH\"" % str(self.bin_path)
                 if bas_prof_export not in _:
-                    with open(bash_prof, "a+") as b_prof:
+                    with open(str(set_prof), "a+") as b_prof:
                         b_prof.write("export PATH=\"%s:$PATH\"" % str(self.bin_path))
-                    cmd = ["source %s" % bash_prof]
+                    cmd = ["source %s" % str(set_prof)]
                     stdout = system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
 
 
@@ -183,11 +194,17 @@ class LinuxInstallR(BaseInstallR):
 
     def global_interpreter(self, version):
         version_name = "R-%s" % version
-        if Path(self.bin_path / "R").exists() and Path(self.bin_path / "Rscript").exists():
+        if Path(self.bin_path / "R").is_symlink():
             remove(str(self.bin_path / "R"))
+        if Path(self.bin_path / "Rscript").is_symlink():
             remove(str(self.bin_path / "Rscript"))
-        symlink(str(self.lib_path / "cran" / version_name / "bin" / "R"), str(self.bin_path / "R"))
-        symlink(str(self.lib_path / "cran" / version_name / "bin" / "Rscript", str(self.bin_path / "Rscript")))
+        if Path(self.lib_path / "cran" / version_name / "bin" / "R").exists() or \
+                Path(self.lib_path / "cran" / version_name / "bin" / "Rscript").exists():
+            Path(self.bin_path / "R").symlink_to(self.lib_path / "cran" / version_name / "bin" / "R")
+            Path(self.bin_path / "Rscript").symlink_to(self.lib_path / "cran" / version_name / "bin" / "Rscript")
+        else:
+            self.logger.info("The version of R you are looking for does not exist yet.")
+            raise FileNotFoundError
 
     def clear_tmp_dir(self):
         # Set up the temporary directory for installation

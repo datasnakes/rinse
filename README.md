@@ -17,9 +17,15 @@ Will work with:
 
 ## Installation
 
-Currently rinse is not on PyPi.  For now you will have to do the following:
+Currently, rinse is in the alpha stage of development.  The latest release can be installed from PyPI
+or the development version can be installed from the *dev-master* branch on GitHub.
 
-### Create a new Virutal Environment
+### Latest Release
+
+```console
+[ $ ] pip install rinstall
+```
+### Development Version
 
 Create a VE called `rinse` using your tool of choice:
 
@@ -32,7 +38,7 @@ Create a VE called `rinse` using your tool of choice:
 * pew
 * python -m venv
 
-After making a VE install poetry into it
+After making a VE install poetry into it:
 
 ```console
 [ $ ] python -m venv ~/.env/rinse
@@ -40,7 +46,7 @@ After making a VE install poetry into it
 (rinse) [ $ ] pip install poetry
 ...
 (rinse) [ $ ] mkdir GitHub; cd Github
-(rinse) [ ~/Github $ ] git clone https://github.com/datasnakes/rinse.git
+(rinse) [ ~/Github $ ] git clone -b dev-master https://github.com/datasnakes/rinse.git
 (rinse) [ ~/Github $ ] cd rinse
 (rinse) [ ~/Github/rinse $ ] poetry install
 ...
@@ -48,7 +54,7 @@ After making a VE install poetry into it
 
 ### Initialize Rinse
 
-Before you do anyting rinse must be initialized or you will get an error:
+Before you do anything, rinstall must be initialized or you will get an error:
 
 ```console
 (rinse) [ ~/Github/rinse $ ] rinse init
@@ -66,6 +72,8 @@ You can install the latest version of R into your home directory with a single s
 (rinse) [ ~/Github/rinse $ ] rinse install 3.5.3
 
 ```
+
+**Note**:  _Be aware that R can take around 20 minutes to install._
 
 ## Alternate Usage
 

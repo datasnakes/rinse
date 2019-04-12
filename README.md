@@ -17,7 +17,7 @@ Will work with:
 
 ## Installation
 
-Currently, rinse is in the alpha stage of development.  The latest release can be installed from PyPI,
+Currently, rinse is in the alpha stage of development.  The latest release can be installed from PyPI
 or the development version can be installed from the *dev-master* branch on GitHub.
 
 ### Latest Release

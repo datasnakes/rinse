@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rinstall"
-version = "0.2.2"
+version = "0.2.3"
 license = "MIT"
 description = "A configurable installer CLI for installing R from source (sudo and non-sudo)."
 authors = ["Rob Gilmore <robgilmore127@gmail.com>"]

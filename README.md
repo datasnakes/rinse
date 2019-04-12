@@ -54,7 +54,7 @@ After making a VE install poetry into it:
 
 ### Initialize Rinse
 
-Before you do anything rinse must be initialized or you will get an error:
+Before you do anything, rinstall must be initialized or you will get an error:
 
 ```console
 (rinse) [ ~/Github/rinse $ ] rinse init

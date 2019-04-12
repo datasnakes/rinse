@@ -70,7 +70,6 @@ You can install the latest version of R into your home directory with a single s
 (rinse) [ ~/Github/rinse $ ] rinse install latest
 # or
 (rinse) [ ~/Github/rinse $ ] rinse install 3.5.3
-
 ```
 
 **Note**:  _Be aware that R can take around 20 minutes to install._
@@ -96,6 +95,7 @@ Here's how you can work through various installation steps:
 
 ## Maintainers
 
-* Shaurita Hutchins
+* Kristen Bystrom
 * Rob Gilmore
 * Bruno Grande
+* Shaurita Hutchins

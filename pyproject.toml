@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "rinse"
+name = "rinstall"
 version = "0.2.2"
 license = "MIT"
 description = "A configurable installer CLI for installing R from source (sudo and non-sudo)."

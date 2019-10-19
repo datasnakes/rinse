@@ -256,5 +256,36 @@ class MacInstallR(BaseInstallR):
 
 class WindowsInstallR(BaseInstallR):
 
-    def __init__(self):
-        print("Hello World")
+    def __init__(self, version, method, name, path, repos, glbl, config_clear, config_keep, init, verbose):
+        super().__init__(path=path, version=version, repos=repos, method=method, name=name, init=init, verbose=verbose)
+        self.config_clear = config_clear
+        self.config_keep = config_keep
+        if glbl is not None:
+            self.global_interpreter(version=glbl)
+
+    def installer(self):
+        if self.method == "source":
+            src_file_path = self.source_download()
+            self.source_setup(src_file_path=src_file_path)
+            self.source_configure()
+            self.source_make()
+        elif self.method == "local":
+            self.use_local()
+            
+    def source_download(self, overwrite):
+        # Download the source exe
+        if self.version == "latest":
+            url = "https://cran.r-project.org/bin/windows/base/release.htm"
+            self.logger.info("Downloading the latest R version.")
+        else:
+            major_version = self.version[0:1]
+            url = "%s/bin/windows/base/R-%s.%s-win.exe" % (self.repos, major_version, self.version)
+            self.logger.info("Downloading R version %s" % major_version)
+        src_file_url = re.get(url=url)
+        src_file_path = self.src_path / "cran" / Path(url).name
+        if (not src_file_path.exists()) or overwrite:
+            open(str(src_file_path), 'wb').write(src_file_url.content)
+        return src_file_path
+
+    def download_rtools(self, rversion):
+        pass

@@ -5,13 +5,12 @@ from shutil import rmtree
 from pkg_resources import resource_filename
 import subprocess as sp
 import logging
-import requests as req
+import requests
 import tarfile
 import re
-import subprocess
-import sys
-import os
+import urllib.request
 import ctypes
+import sys
 
 from rinse import cookies
 from rinse.utils import system_cmd
@@ -67,10 +66,15 @@ class BaseInstallR(object):
 
         # Create class variables from parameters
         self.method = method  # source for now spack for later
-        if version == "--help":
+        if version == None or version == "--help" or version == "latest":
             self.version = "latest"
         else:
-            self.version = version
+            avail_versions = self.get_versions()
+            if version in avail_versions:
+                self.version = version
+            else:
+                print("Cannot find specified version %s. The list of available versions are:" % version)
+                print(avail_versions)
         self.repos = repos
 
     def initial_setup(self):
@@ -110,13 +114,16 @@ class BaseInstallR(object):
                         stdout = system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
         # For Windows Installation
         elif self.os == "windows":
+            print("Hello Windows")
             #adding beRi to environment var
-            if str(self.bin_path) not in environ["PATH"]:
-                print(str(self.rinse_path.expanduser().absolute()))
-                # environ["PATH"] = str(self.rinse_path.expanduser().absolute())
-                subprocess.call('set PATH=%PATH%;' + str(self.rinse_path.expanduser().absolute()), shell=True)
+            # if str(self.bin_path) not in environ["PATH"]:
+            #     print(str(self.rinse_path.expanduser().absolute()))
+            #     environ["PATH"] =environ["PATH"] + ';'+ str(self.rinse_path.expanduser().absolute())
+            #     cmd = ["set PATH=%s" % str(environ['PATH'])]
+            #     system_cmd(cmd=cmd, stdout = sp.PIPE, stderr=sp.STDOUT, shell=True)
+                # subprocess.call('setx /M PATH=%PATH%;' + str(self.rinse_path.expanduser().absolute()), shell=True)
                 # subprocess.call('sqsub -np ' + str(self.rinse_path.expanduser().absolute()), shell=True)
-                print(environ["PATH"])
+                # print(environ["PATH"])
         elif self.os == "mac":
             #TODO:
             print("Hello Mac User")
@@ -130,6 +137,17 @@ class BaseInstallR(object):
             print('set to Hidden')
         else:  # return code of zero indicates failure -- raise a Windows error
             raise ctypes.WinError()
+
+
+    def get_versions(self):
+        url = 'https://cloud.r-project.org/bin/windows/base/old/'
+
+        req = urllib.request.Request(url)
+        resp = urllib.request.urlopen(req)
+        respData = resp.read()
+
+        versions = re.findall(r'>R ([0-9].*?)</a>', str(respData))
+        return versions
 
 class LinuxInstallR(BaseInstallR):
 
@@ -278,6 +296,8 @@ class WindowsInstallR(BaseInstallR):
         super().__init__(path=path, version=version, repos=repos, method=method, name=name, init=init, verbose=verbose)
         self.config_clear = config_clear
         self.config_keep = config_keep
+        self.version = version
+        self.src_file_path = self.src_path
         if glbl is not None:
             self.global_interpreter(version=glbl)
         
@@ -302,25 +322,44 @@ class WindowsInstallR(BaseInstallR):
             
     def source_download(self, overwrite):
         # Download the source exe
+        url, file_name = self.url_setup()
+        self.src_file_path = self.src_path / "cran" / Path(file_name)
+
+        with open(self.src_file_path, "wb") as f:
+            print("Downloading %s" % file_name)
+            response = requests.get(url, stream=True)
+            total_length = response.headers.get('content-length')
+
+            if total_length is None:  # no content length header
+                f.write(response.content)
+            else:
+                dl = 0
+                total_length = int(total_length)
+                for data in response.iter_content(chunk_size=4096):
+                    dl += len(data)
+                    f.write(data)
+                    done = int(50 * dl / total_length)
+                    sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50 - done)))
+                    sys.stdout.flush()
+        return
+
+    def url_setup(self):
         if self.version == "latest":
-            url = "https://cran.r-project.org/bin/windows/base/release.htm"
-            self.logger.info("Downloading the latest R version.")
+            ver = self.get_versions()[0]
+            url = "https://cloud.r-project.org/bin/windows/base/old/%s/R-%s-win.exe" % (ver, ver)
+            filename = "R-%s-win.exe" % ver
+            print(url)
         else:
             major_version = self.version[0:1]
             url = "%s/bin/windows/base/R-%s.%s-win.exe" % (self.repos, major_version, self.version)
             self.logger.info("Downloading R version %s" % major_version)
-        src_file_url = req.get(url=url, allow_redirects=True)
-        exe_name = self._parse_request_text(src_file_url.text)
-        src_file_path = self.src_path / "cran" / Path(exe_name)
-        if (not src_file_path.exists()) or overwrite:
-            open(str(src_file_path), 'wb').write(src_file_url.content)
-        return src_file_path
+        return url, filename
 
     def source_setup(self, src_file_path):
         # Check the temp directory if necessary
         self.clear_tmp_dir()
         # Run the R exe silently
-        cmd = []
+        cmd = '%s /VERYSILENT' % (self.src_file_path)
         system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
         # Configure rinse-bin for the configuration process
         rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
@@ -350,6 +389,16 @@ class WindowsInstallR(BaseInstallR):
             self.logger.debug("Creating R home directory in %s" % r_home)
             r_home.mkdir()
 
+
+    def get_versions(self):
+        url = 'https://cloud.r-project.org/bin/windows/base/old/'
+
+        req = urllib.request.Request(url)
+        resp = urllib.request.urlopen(req)
+        respData = resp.read()
+
+        versions = re.findall(r'>R ([0-9].*?)</a>', str(respData))
+        return versions
 
     def download_rtools(self):
         pass

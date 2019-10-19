@@ -3,12 +3,13 @@ from pathlib import Path
 from os import listdir, chdir, mkdir, symlink, remove, environ
 from shutil import rmtree
 from pkg_resources import resource_filename
-from rinse import cookies
-import requests as re
-import tarfile
-from rinse.utils import system_cmd
 import subprocess as sp
 import logging
+import requests as re
+import tarfile
+
+from rinse import cookies
+from rinse.utils import system_cmd
 
 
 class BaseInstallR(object):
@@ -52,12 +53,12 @@ class BaseInstallR(object):
         self.cookie_jar = Path(resource_filename(cookies.__name__, ''))
         if init:
             if self.rinse_path.exists():
-                raise FileExistsError("The rinse path you have set already exists: %s" % self.rinse_path)
+                self.logger.error("The rinse path you have set already exists: %s" % self.rinse_path)
             elif not self.rinse_path.exists():
                 self.initial_setup()
                 self.logger.info("Initializing rinse.")
         elif not self.rinse_path.exists():
-            raise EnvironmentError("You have not initialized rinse yet.  Please run 'rinse init' to continue.")
+            self.logger.error("You have not initialized rinse yet.  Please run 'rinse init' to continue.")
 
         # Create class variables from parameters
         self.method = method  # source for now spack for later
@@ -228,8 +229,7 @@ class LinuxInstallR(BaseInstallR):
             Path(self.bin_path / "R").symlink_to(self.lib_path / "cran" / version_name / "bin" / "R")
             Path(self.bin_path / "Rscript").symlink_to(self.lib_path / "cran" / version_name / "bin" / "Rscript")
         else:
-            self.logger.info("The version of R you are looking for does not exist yet.")
-            raise FileNotFoundError
+            self.logger.error("The version of R you are looking for does not exist yet.")
 
     def clear_tmp_dir(self):
         # Set up the temporary directory for installation

@@ -9,8 +9,9 @@ import requests as re
 import tarfile
 import subprocess
 import sys
-import os
 import ctypes
+import urllib.request
+import re
 
 from rinse import cookies
 from rinse.utils import system_cmd
@@ -69,7 +70,12 @@ class BaseInstallR(object):
         if version == "--help":
             self.version = "latest"
         else:
-            self.version = version
+            avail_versions = self.get_versions()
+            if version in avail_versions:
+                self.version = version
+            else:
+                print("Cannot find specified version. The list of available versions are:")
+                print(avail_versions)
         self.repos = repos
 
     def initial_setup(self):
@@ -110,12 +116,14 @@ class BaseInstallR(object):
         # For Windows Installation
         elif self.os == "windows":
             #adding beRi to environment var
-            if str(self.bin_path) not in environ["PATH"]:
-                print(str(self.rinse_path.expanduser().absolute()))
-                # environ["PATH"] = str(self.rinse_path.expanduser().absolute())
-                subprocess.call('set PATH=%PATH%;' + str(self.rinse_path.expanduser().absolute()), shell=True)
+            # if str(self.bin_path) not in environ["PATH"]:
+            #     print(str(self.rinse_path.expanduser().absolute()))
+            #     environ["PATH"] =environ["PATH"] + ';'+ str(self.rinse_path.expanduser().absolute())
+            #     cmd = ["set PATH=%s" % str(environ['PATH'])]
+            #     system_cmd(cmd=cmd, stdout = sp.PIPE, stderr=sp.STDOUT, shell=True)
+                # subprocess.call('setx /M PATH=%PATH%;' + str(self.rinse_path.expanduser().absolute()), shell=True)
                 # subprocess.call('sqsub -np ' + str(self.rinse_path.expanduser().absolute()), shell=True)
-                print(environ["PATH"])
+                # print(environ["PATH"])
         elif self.os == "mac":
             #TODO:
             print("Hello Mac User")
@@ -129,6 +137,17 @@ class BaseInstallR(object):
             print('set to Hidden')
         else:  # return code of zero indicates failure -- raise a Windows error
             raise ctypes.WinError()
+
+
+    def get_versions(self):
+        url = 'https://cloud.r-project.org/bin/windows/base/old/'
+
+        req = urllib.request.Request(url)
+        resp = urllib.request.urlopen(req)
+        respData = resp.read()
+
+        versions = re.findall(r'>R([0-9].*?)</a>', str(respData))
+        return versions
 
 class LinuxInstallR(BaseInstallR):
 
@@ -275,3 +294,13 @@ class WindowsInstallR(BaseInstallR):
 
     def __init__(self):
         print("Hello World")
+
+    def get_versions(self):
+        url = 'https://cloud.r-project.org/bin/windows/base/old/'
+
+        req = urllib.request.Request(url)
+        resp = urllib.request.urlopen(req)
+        respData = resp.read()
+
+        versions = re.findall(r'>R([0-9].*?)</a>', str(respData))
+        return versions

@@ -358,6 +358,7 @@ class WindowsInstallR(BaseInstallR):
         # Check the temp directory if necessary
         self.clear_tmp_dir()
         # Run the R exe silently
+        print("Download Complete. Waiting for R to install")
         cmd = '%s /VERYSILENT' % (self.src_file_path)
         system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
         # Configure rinse-bin for the configuration process

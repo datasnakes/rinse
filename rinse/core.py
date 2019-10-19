@@ -5,8 +5,9 @@ from shutil import rmtree
 from pkg_resources import resource_filename
 import subprocess as sp
 import logging
-import requests as re
+import requests as req
 import tarfile
+import re
 
 from rinse import cookies
 from rinse.utils import system_cmd
@@ -162,7 +163,7 @@ class LinuxInstallR(BaseInstallR):
             major_version = self.version[0:1]
             url = "%s/src/base/R-%s/R-%s.tar.gz" % (self.repos, major_version, self.version)
             self.logger.info("Downloading R version %s" % major_version)
-        src_file_url = re.get(url=url)
+        src_file_url = req.get(url=url)
         src_file_path = self.src_path / "cran" / Path(url).name
         if (not src_file_path.exists()) or overwrite:
             open(str(src_file_path), 'wb').write(src_file_url.content)
@@ -282,13 +283,23 @@ class WindowsInstallR(BaseInstallR):
         self.config_keep = config_keep
         if glbl is not None:
             self.global_interpreter(version=glbl)
+            
+            
+    def _parse_request_text(self, text):
+        # Expected content string from latest release url.
+        content_str = '<html>\n<head>\n<META HTTP-EQUIV="Refresh" CONTENT="0; URL=(.*)">\n<body></body>\n\n'
+        # Compile the string for regex
+        p = re.compile(content_str)
+        # Search for matches
+        result = p.search(text)
+        # Retrieve exe name from match group
+        exe_name = result.group(1)
+        return exe_name
 
     def installer(self):
         if self.method == "source":
             src_file_path = self.source_download()
             self.source_setup(src_file_path=src_file_path)
-            self.source_configure()
-            self.source_make()
         elif self.method == "local":
             self.use_local()
             
@@ -301,11 +312,25 @@ class WindowsInstallR(BaseInstallR):
             major_version = self.version[0:1]
             url = "%s/bin/windows/base/R-%s.%s-win.exe" % (self.repos, major_version, self.version)
             self.logger.info("Downloading R version %s" % major_version)
-        src_file_url = re.get(url=url)
-        src_file_path = self.src_path / "cran" / Path(url).name
+        src_file_url = req.get(url=url, allow_redirects=True)
+        exe_name = self._parse_request_text(src_file_url.text)
+        src_file_path = self.src_path / "cran" / Path(exe_name)
         if (not src_file_path.exists()) or overwrite:
             open(str(src_file_path), 'wb').write(src_file_url.content)
         return src_file_path
 
-    def download_rtools(self, rversion):
+    def source_setup(self, src_file_path):
+        # Check the temp directory if necessary
+        self.clear_tmp_dir()
+        # Run the R exe silently
+        pass
+        # Configure rinse-bin for the configuration process
+        rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
+        if rinse_bin.exists():
+            rmtree(rinse_bin)
+            self.logger.debug("Removing existing rinse folder.")
+        mkdir(str(rinse_bin))
+        return rinse_bin
+
+    def download_rtools(self):
         pass

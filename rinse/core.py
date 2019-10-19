@@ -283,8 +283,7 @@ class WindowsInstallR(BaseInstallR):
         self.config_keep = config_keep
         if glbl is not None:
             self.global_interpreter(version=glbl)
-            
-            
+        
     def _parse_request_text(self, text):
         # Expected content string from latest release url.
         content_str = '<html>\n<head>\n<META HTTP-EQUIV="Refresh" CONTENT="0; URL=(.*)">\n<body></body>\n\n'
@@ -300,6 +299,7 @@ class WindowsInstallR(BaseInstallR):
         if self.method == "source":
             src_file_path = self.source_download()
             self.source_setup(src_file_path=src_file_path)
+            self.create_rhome()
         elif self.method == "local":
             self.use_local()
             
@@ -323,7 +323,8 @@ class WindowsInstallR(BaseInstallR):
         # Check the temp directory if necessary
         self.clear_tmp_dir()
         # Run the R exe silently
-        pass
+        cmd = []
+        system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
         # Configure rinse-bin for the configuration process
         rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
         if rinse_bin.exists():
@@ -331,6 +332,27 @@ class WindowsInstallR(BaseInstallR):
             self.logger.debug("Removing existing rinse folder.")
         mkdir(str(rinse_bin))
         return rinse_bin
+
+    def clear_tmp_dir(self):
+        # Set up the temporary directory for installation
+        if self.config_clear[0] == "all":
+            rmtree(str(self.tmp_path))
+            self.tmp_path.mkdir(parents=True)
+        elif len(self.config_clear) >= 1:
+            for vrs in self.config_clear:
+                if vrs not in self.config_keep:
+                    rmtree(str(self.tmp_path / Path("R-%s" % vrs)))
+
+    def create_rhome(self):
+        # Set up R_HOME
+        rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
+        chdir(str(rinse_bin))
+        r_home_name = Path(rinse_bin).parent.name
+        r_home = self.lib_path / "cran" / r_home_name
+        if not r_home.exists():
+            self.logger.debug("Creating R home directory in %s" % r_home)
+            r_home.mkdir()
+
 
     def download_rtools(self):
         pass

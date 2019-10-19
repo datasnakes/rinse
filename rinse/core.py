@@ -314,7 +314,7 @@ class WindowsInstallR(BaseInstallR):
         url, file_name = self._url_setup()
         self.src_file_path = self.src_path / "cran" / Path(file_name)
 
-        if not self.src_file_path.exists():
+        if (not self.src_file_path.exists()) or overwrite:
             with open(self.src_file_path, "wb") as f:
                 self.logger.info("Downloading %s" % file_name)
                 response = requests.get(url, stream=True)

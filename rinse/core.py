@@ -73,8 +73,8 @@ class BaseInstallR(object):
             if version in avail_versions:
                 self.version = version
             else:
-                print("Cannot find specified version %s. The list of available versions are:" % version)
-                print(avail_versions)
+                self.logger.error("Cannot find specified version %s. The list of available versions are:" % version)
+                self.logger.info(avail_versions)
         self.repos = repos
 
     def initial_setup(self):
@@ -114,8 +114,8 @@ class BaseInstallR(object):
                         stdout = system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
         # For Windows Installation
         elif self.os == "windows":
-            print("Hello Windows")
-            #adding beRi to environment var
+            self.logger.info("Add %s to your Windows PATH" % self.rinse_path.expanduser().absolute())
+            # adding beRi to environment var
             # if str(self.bin_path) not in environ["PATH"]:
             #     print(str(self.rinse_path.expanduser().absolute()))
             #     environ["PATH"] =environ["PATH"] + ';'+ str(self.rinse_path.expanduser().absolute())
@@ -134,7 +134,7 @@ class BaseInstallR(object):
         FILE_ATTRIBUTE_HIDDEN = 0x02
         ret = ctypes.windll.kernel32.SetFileAttributesW(path,FILE_ATTRIBUTE_HIDDEN)
         if ret:
-            print('set to Hidden')
+            self.logger.info('set to Hidden')
         else:  # return code of zero indicates failure -- raise a Windows error
             raise ctypes.WinError()
 
@@ -178,7 +178,7 @@ class LinuxInstallR(BaseInstallR):
             major_version = self.version[0:1]
             url = "%s/src/base/R-%s/R-%s.tar.gz" % (self.repos, major_version, self.version)
             self.logger.info("Downloading R version %s" % major_version)
-        src_file_url = req.get(url=url)
+        src_file_url = requests.get(url=url)
         src_file_path = self.src_path / "cran" / Path(url).name
         if (not src_file_path.exists()) or overwrite:
             open(str(src_file_path), 'wb').write(src_file_url.content)
@@ -322,15 +322,15 @@ class WindowsInstallR(BaseInstallR):
             
     def source_download(self, overwrite):
         # Download the source exe
-        url, file_name = self.url_setup()
+        url, file_name = self._url_setup()
         self.src_file_path = self.src_path / "cran" / Path(file_name)
 
         with open(self.src_file_path, "wb") as f:
-            print("Downloading %s" % file_name)
+            self.logger.info("Downloading %s" % file_name)
             response = requests.get(url, stream=True)
             total_length = response.headers.get('content-length')
 
-            if total_length is None:  # no content length header
+            if not total_length:  # no content length header
                 f.write(response.content)
             else:
                 dl = 0
@@ -343,12 +343,11 @@ class WindowsInstallR(BaseInstallR):
                     sys.stdout.flush()
         return
 
-    def url_setup(self):
+    def _url_setup(self):
         if self.version == "latest":
             ver = self.get_versions()[0]
             url = "https://cloud.r-project.org/bin/windows/base/old/%s/R-%s-win.exe" % (ver, ver)
             filename = "R-%s-win.exe" % ver
-            print(url)
         else:
             major_version = self.version[0:1]
             url = "%s/bin/windows/base/R-%s.%s-win.exe" % (self.repos, major_version, self.version)
@@ -389,10 +388,9 @@ class WindowsInstallR(BaseInstallR):
             self.logger.debug("Creating R home directory in %s" % r_home)
             r_home.mkdir()
 
-
     def get_versions(self):
         url = 'https://cloud.r-project.org/bin/windows/base/old/'
-
+    
         req = urllib.request.Request(url)
         resp = urllib.request.urlopen(req)
         respData = resp.read()

@@ -300,17 +300,6 @@ class WindowsInstallR(BaseInstallR):
         self.src_file_path = self.src_path
         if glbl is not None:
             self.global_interpreter(version=glbl)
-        
-    def _parse_request_text(self, text):
-        # Expected content string from latest release url.
-        content_str = '<html>\n<head>\n<META HTTP-EQUIV="Refresh" CONTENT="0; URL=(.*)">\n<body></body>\n\n'
-        # Compile the string for regex
-        p = re.compile(content_str)
-        # Search for matches
-        result = p.search(text)
-        # Retrieve exe name from match group
-        exe_name = result.group(1)
-        return exe_name
 
     def installer(self):
         if self.method == "source":
@@ -325,22 +314,23 @@ class WindowsInstallR(BaseInstallR):
         url, file_name = self._url_setup()
         self.src_file_path = self.src_path / "cran" / Path(file_name)
 
-        with open(self.src_file_path, "wb") as f:
-            self.logger.info("Downloading %s" % file_name)
-            response = requests.get(url, stream=True)
-            total_length = response.headers.get('content-length')
+        if not self.src_file_path.exists():
+            with open(self.src_file_path, "wb") as f:
+                self.logger.info("Downloading %s" % file_name)
+                response = requests.get(url, stream=True)
+                total_length = response.headers.get('content-length')
 
-            if not total_length:  # no content length header
-                f.write(response.content)
-            else:
-                dl = 0
-                total_length = int(total_length)
-                for data in response.iter_content(chunk_size=4096):
-                    dl += len(data)
-                    f.write(data)
-                    done = int(50 * dl / total_length)
-                    sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50 - done)))
-                    sys.stdout.flush()
+                if not total_length:  # no content length header
+                    f.write(response.content)
+                else:
+                    dl = 0
+                    total_length = int(total_length)
+                    for data in response.iter_content(chunk_size=4096):
+                        dl += len(data)
+                        f.write(data)
+                        done = int(50 * dl / total_length)
+                        sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50 - done)))
+                        sys.stdout.flush()
         return
 
     def _url_setup(self):
@@ -358,8 +348,9 @@ class WindowsInstallR(BaseInstallR):
         # Check the temp directory if necessary
         self.clear_tmp_dir()
         # Run the R exe silently
-        cmd = '%s /VERYSILENT' % (self.src_file_path)
+        cmd = '%s /VERYSILENT /DIR=%s' % (self.src_file_path, self.tmp_path)
         system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+        self.logger.info("Installing %s" % self.src_file_path.name)
         # Configure rinse-bin for the configuration process
         rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
         if rinse_bin.exists():
@@ -388,6 +379,10 @@ class WindowsInstallR(BaseInstallR):
             self.logger.debug("Creating R home directory in %s" % r_home)
             r_home.mkdir()
 
+    def source_configure(self, configure_opts=None):
+        # Set up R_HOME
+        rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
+        
     def get_versions(self):
         url = 'https://cloud.r-project.org/bin/windows/base/old/'
     

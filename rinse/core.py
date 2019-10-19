@@ -13,7 +13,18 @@ import logging
 
 class BaseInstallR(object):
 
-    def __init__(self, path, name, version=None, repos=None, method=None, init=None, verbose=False):
+    def __init__(self, path, name, version=None, repos=None, method=None, init=None, verbose=False, os=None):
+        """
+        Initiation function
+        :param path: Absolute install path
+        :param name: Directory name; defaul = .rinse
+        :param version: r version
+        :param repos: the repo used for downloading source file
+        :param method:
+        :param init:
+        :param verbose:
+        :param os: windows, mac, or linux
+        """
         # Rinse path setup
         self.name = name
         self.path = Path(path).expanduser().absolute()
@@ -24,7 +35,8 @@ class BaseInstallR(object):
         self.src_path = self.rinse_path / "src"
         self.lib_path = self.rinse_path / "lib"
         self.bin_path = self.rinse_path / "bin"
-        
+        self.os = os
+
         # Set up logger
         # Change level of logger based on verbose paramater.
         if self.verbose:
@@ -56,6 +68,10 @@ class BaseInstallR(object):
         self.repos = repos
 
     def initial_setup(self):
+        """
+        setup for rinse init
+        :return:
+        """
         # Prepare and run cookiecutter
         init_cookie = self.cookie_jar / Path("init")
         e_c = {
@@ -63,28 +79,37 @@ class BaseInstallR(object):
         }
         cookiecutter(str(init_cookie), no_input=True, extra_context=e_c, output_dir=str(self.path))
         # Setup environment variables
-        if str(self.bin_path) not in environ["PATH"]:
-            # See if .bash_profile or .profile exists
-            bash_prof = Path("~/.bash_profile").expanduser().absolute()
-            sh_prof = Path("~/.profile").expanduser().absolute()
-            if not bash_prof.exists():
-                if not sh_prof.exists():
-                    bash_prof.touch(mode=0o700)
-                    set_prof = bash_prof
+        if self.os == "linux":
+            if str(self.bin_path) not in environ["PATH"]:
+                # See if .bash_profile or .profile exists
+                bash_prof = Path("~/.bash_profile").expanduser().absolute()
+                sh_prof = Path("~/.profile").expanduser().absolute()
+                if not bash_prof.exists():
+                    if not sh_prof.exists():
+                        bash_prof.touch(mode=0o700)
+                        set_prof = bash_prof
+                    else:
+                        set_prof = sh_prof
                 else:
-                    set_prof = sh_prof
-            else:
-                set_prof = bash_prof
-            self.logger.info("Setting the PATH in %s" % str(set_prof))
-            # Use the set .*profile to append to PATH
-            with open(str(set_prof), 'r') as prof:
-                _ = prof.read()
-                bas_prof_export = "export PATH=\"%s:$PATH\"" % str(self.bin_path)
-                if bas_prof_export not in _:
-                    with open(str(set_prof), "a+") as b_prof:
-                        b_prof.write("export PATH=\"%s:$PATH\"" % str(self.bin_path))
-                    cmd = ["source %s" % str(set_prof)]
-                    stdout = system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+                    set_prof = bash_prof
+                self.logger.info("Setting the PATH in %s" % str(set_prof))
+                # Use the set .*profile to append to PATH
+                with open(str(set_prof), 'r') as prof:
+                    _ = prof.read()
+                    bas_prof_export = "export PATH=\"%s:$PATH\"" % str(self.bin_path)
+                    if bas_prof_export not in _:
+                        with open(str(set_prof), "a+") as b_prof:
+                            b_prof.write("export PATH=\"%s:$PATH\"" % str(self.bin_path))
+                        cmd = ["source %s" % str(set_prof)]
+                        stdout = system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+        elif self.os == "windows":
+            #TODO:
+            print("Hello Windows User")
+        elif self.os == "mac":
+            #TODO:
+            print("Hello Mac User")
+        else:
+            raise EnvironmentError("Unsupported version of OS: %s" % os)
 
 
 class LinuxInstallR(BaseInstallR):
@@ -232,5 +257,4 @@ class MacInstallR(BaseInstallR):
 class WindowsInstallR(BaseInstallR):
 
     def __init__(self):
-        raise NotImplementedError("Installation of R with rinse on Windows is not supported at this time.")
-
+        print("Hello World")

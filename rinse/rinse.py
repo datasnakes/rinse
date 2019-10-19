@@ -26,15 +26,16 @@ def rinse(ctx, repos, method, path, name):
         raise NotImplementedError("Rinse only supports installing into the home directory at this time.")
 
     # Get the system dependent installation class
-    installR = get_system_installer()
+    installR, os = get_system_installer()
     ctx.obj['installR'] = installR
+    ctx.obj['os'] = os
 
 
 @rinse.command(help="Initialize rinse using the /<path>/<name>.")
 @click.pass_context
 def init(ctx):
     # Initialize rinse
-    BaseInstallR(path=ctx.obj['path'], name=ctx.obj['name'], init=True)
+    BaseInstallR(path=ctx.obj['path'], name=ctx.obj['name'], init=True, os=ctx.obj['os'])
 
 
 @rinse.command(context_settings=dict(

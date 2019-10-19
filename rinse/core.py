@@ -104,8 +104,28 @@ class BaseInstallR(object):
                         cmd = ["source %s" % str(set_prof)]
                         stdout = system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
         elif self.os == "windows":
-            #TODO:
-            print("Hello Windows User")
+            if str(self.bin_path) not in environ["PATH"]:
+                # See if .bash_profile or .profile exists
+                bash_prof = Path("~\\\.bash_profile").expanduser().absolute()
+                sh_prof = Path("~\\\.profile").expanduser().absolute()
+                if not bash_prof.exists():
+                    if not sh_prof.exists():
+                        bash_prof.touch(mode=0o700)
+                        set_prof = bash_prof
+                    else:
+                        set_prof = sh_prof
+                else:
+                    set_prof = bash_prof
+                self.logger.info("Setting the PATH in %s" % str(set_prof))
+                # Use the set .*profile to append to PATH
+                with open(str(set_prof), 'r') as prof:
+                    _ = prof.read()
+                    bas_prof_export = "export PATH=\"%s:$PATH\"" % str(self.bin_path)
+                    if bas_prof_export not in _:
+                        with open(str(set_prof), "a+") as b_prof:
+                            b_prof.write("export PATH=\"%s:$PATH\"" % str(self.bin_path))
+                        cmd = ["source %s" % str(set_prof)]
+                        stdout = system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
         elif self.os == "mac":
             #TODO:
             print("Hello Mac User")

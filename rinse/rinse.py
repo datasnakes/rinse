@@ -76,13 +76,14 @@ def install(ctx, version, clear, without_make, check, installer, install_info,
             test_check_all, verbose):
     # Configure
     ctx.invoke(configure, version=version, clear=clear, verbose=verbose)
-    # Install
-    ctx.invoke(make, version=version, clear=clear, without_make=without_make,
-               check=check, installer=installer, install_info=install_info,
-               install_pdf=install_pdf, install_tests=install_tests)
-    # Test Installation
-    ctx.invoke(test, version=version, clear=clear, check=test_check,
-               check_devel=test_check_devel, check_all=test_check_all)
+    if ctx.obj['os'] != "windows":
+        # Install with make
+        ctx.invoke(make, version=version, clear=clear, without_make=without_make,
+                check=check, installer=installer, install_info=install_info,
+                install_pdf=install_pdf, install_tests=install_tests)
+        # Test Installation
+        ctx.invoke(test, version=version, clear=clear, check=test_check,
+                check_devel=test_check_devel, check_all=test_check_all)
 
 
 @rinse.command(context_settings=dict(
@@ -107,7 +108,10 @@ def configure(ctx, version, clear, overwrite_source, verbose):
                         glbl=None, init=False, verbose=verbose)
     src_file_path = installR.source_download(overwrite=overwrite_source)
     installR.source_setup(src_file_path=src_file_path)
-    installR.source_configure(configure_opts=configure_opts)
+    if ctx.obj['os'] == "windows":
+        installR.create_rhome()
+    else:
+        installR.source_configure(configure_opts=configure_opts)
 
 
 @rinse.command(help="Start running custom make commands for the installation.")

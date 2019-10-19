@@ -378,11 +378,7 @@ class WindowsInstallR(BaseInstallR):
         if not r_home.exists():
             self.logger.debug("Creating R home directory in %s" % r_home)
             r_home.mkdir()
-
-    def source_configure(self, configure_opts=None):
-        # Set up R_HOME
-        rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
-        
+       
     def get_versions(self):
         url = 'https://cloud.r-project.org/bin/windows/base/old/'
     
@@ -394,4 +390,4 @@ class WindowsInstallR(BaseInstallR):
         return versions
 
     def download_rtools(self):
-        pass
+        base_url = "https://cran.r-project.org/bin/windows/testing/rtools{}-x86_64.exe"

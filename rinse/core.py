@@ -5,14 +5,12 @@ from shutil import rmtree
 from pkg_resources import resource_filename
 import subprocess as sp
 import logging
-import requests as re
+import requests
 import tarfile
-import subprocess
-import sys
-import ctypes
-import urllib.request
 import re
-
+import urllib.request
+import ctypes
+import sys
 from rinse import cookies
 from rinse.utils import system_cmd
 
@@ -67,14 +65,14 @@ class BaseInstallR(object):
 
         # Create class variables from parameters
         self.method = method  # source for now spack for later
-        if version == "--help":
+        if version == None or version == "--help" or version == "latest":
             self.version = "latest"
         else:
             avail_versions = self.get_versions()
             if version in avail_versions:
                 self.version = version
             else:
-                print("Cannot find specified version. The list of available versions are:")
+                print("Cannot find specified version %s. The list of available versions are:" % version)
                 print(avail_versions)
         self.repos = repos
 
@@ -115,6 +113,7 @@ class BaseInstallR(object):
                         stdout = system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
         # For Windows Installation
         elif self.os == "windows":
+            print("Hello Windows")
             #adding beRi to environment var
             # if str(self.bin_path) not in environ["PATH"]:
             #     print(str(self.rinse_path.expanduser().absolute()))
@@ -146,7 +145,7 @@ class BaseInstallR(object):
         resp = urllib.request.urlopen(req)
         respData = resp.read()
 
-        versions = re.findall(r'>R([0-9].*?)</a>', str(respData))
+        versions = re.findall(r'>R ([0-9].*?)</a>', str(respData))
         return versions
 
 class LinuxInstallR(BaseInstallR):
@@ -178,7 +177,7 @@ class LinuxInstallR(BaseInstallR):
             major_version = self.version[0:1]
             url = "%s/src/base/R-%s/R-%s.tar.gz" % (self.repos, major_version, self.version)
             self.logger.info("Downloading R version %s" % major_version)
-        src_file_url = re.get(url=url)
+        src_file_url = req.get(url=url)
         src_file_path = self.src_path / "cran" / Path(url).name
         if (not src_file_path.exists()) or overwrite:
             open(str(src_file_path), 'wb').write(src_file_url.content)
@@ -292,8 +291,103 @@ class MacInstallR(BaseInstallR):
 
 class WindowsInstallR(BaseInstallR):
 
-    def __init__(self):
-        print("Hello World")
+    def __init__(self, version, method, name, path, repos, glbl, config_clear, config_keep, init, verbose):
+        super().__init__(path=path, version=version, repos=repos, method=method, name=name, init=init, verbose=verbose)
+        self.config_clear = config_clear
+        self.config_keep = config_keep
+        self.version = version
+        self.src_file_path = self.src_path
+        if glbl is not None:
+            self.global_interpreter(version=glbl)
+        
+    def _parse_request_text(self, text):
+        # Expected content string from latest release url.
+        content_str = '<html>\n<head>\n<META HTTP-EQUIV="Refresh" CONTENT="0; URL=(.*)">\n<body></body>\n\n'
+        # Compile the string for regex
+        p = re.compile(content_str)
+        # Search for matches
+        result = p.search(text)
+        # Retrieve exe name from match group
+        exe_name = result.group(1)
+        return exe_name
+
+    def installer(self):
+        if self.method == "source":
+            src_file_path = self.source_download()
+            self.source_setup(src_file_path=src_file_path)
+            self.create_rhome()
+        elif self.method == "local":
+            self.use_local()
+            
+    def source_download(self, overwrite):
+        # Download the source exe
+        url, file_name = self.url_setup()
+        self.src_file_path = self.src_path / "cran" / Path(file_name)
+
+        with open(self.src_file_path, "wb") as f:
+            print("Downloading %s" % file_name)
+            response = requests.get(url, stream=True)
+            total_length = response.headers.get('content-length')
+
+            if total_length is None:  # no content length header
+                f.write(response.content)
+            else:
+                dl = 0
+                total_length = int(total_length)
+                for data in response.iter_content(chunk_size=4096):
+                    dl += len(data)
+                    f.write(data)
+                    done = int(50 * dl / total_length)
+                    sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50 - done)))
+                    sys.stdout.flush()
+        return
+
+    def url_setup(self):
+        if self.version == "latest":
+            ver = self.get_versions()[0]
+            url = "https://cloud.r-project.org/bin/windows/base/old/%s/R-%s-win.exe" % (ver, ver)
+            filename = "R-%s-win.exe" % ver
+            print(url)
+        else:
+            major_version = self.version[0:1]
+            url = "%s/bin/windows/base/R-%s.%s-win.exe" % (self.repos, major_version, self.version)
+            self.logger.info("Downloading R version %s" % major_version)
+        return url, filename
+
+    def source_setup(self, src_file_path):
+        # Check the temp directory if necessary
+        self.clear_tmp_dir()
+        # Run the R exe silently
+        cmd = '%s /VERYSILENT' % (self.src_file_path)
+        system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+        # Configure rinse-bin for the configuration process
+        rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
+        if rinse_bin.exists():
+            rmtree(rinse_bin)
+            self.logger.debug("Removing existing rinse folder.")
+        mkdir(str(rinse_bin))
+        return rinse_bin
+
+    def clear_tmp_dir(self):
+        # Set up the temporary directory for installation
+        if self.config_clear[0] == "all":
+            rmtree(str(self.tmp_path))
+            self.tmp_path.mkdir(parents=True)
+        elif len(self.config_clear) >= 1:
+            for vrs in self.config_clear:
+                if vrs not in self.config_keep:
+                    rmtree(str(self.tmp_path / Path("R-%s" % vrs)))
+
+    def create_rhome(self):
+        # Set up R_HOME
+        rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
+        chdir(str(rinse_bin))
+        r_home_name = Path(rinse_bin).parent.name
+        r_home = self.lib_path / "cran" / r_home_name
+        if not r_home.exists():
+            self.logger.debug("Creating R home directory in %s" % r_home)
+            r_home.mkdir()
+
 
     def get_versions(self):
         url = 'https://cloud.r-project.org/bin/windows/base/old/'
@@ -302,5 +396,8 @@ class WindowsInstallR(BaseInstallR):
         resp = urllib.request.urlopen(req)
         respData = resp.read()
 
-        versions = re.findall(r'>R([0-9].*?)</a>', str(respData))
+        versions = re.findall(r'>R ([0-9].*?)</a>', str(respData))
         return versions
+
+    def download_rtools(self):
+        pass

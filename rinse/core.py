@@ -335,8 +335,9 @@ class WindowsInstallR(BaseInstallR):
                 for data in response.iter_content(chunk_size=4096):
                     dl += len(data)
                     f.write(data)
-                    done = int(50 * dl / total_length)
-                    sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50 - done)))
+                    done = int(100 * dl / total_length)
+                    half_done = int(done/2)
+                    sys.stdout.write("\r[%s%s] %d%% complete" % ('=' * half_done, ' ' * (50-half_done), done))
                     sys.stdout.flush()
                     
     def source_download(self, overwrite):

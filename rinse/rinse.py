@@ -68,7 +68,7 @@ def init(ctx):
 @click.option("--test-check-all", default=False, is_flag=True,
               show_default=True,
               help="Run 'make check-all' on test files.")
-@click.option('--with-rtools', '-r', is_flag=True,
+@click.option('--with-rtools', '-r', default=False, show_default=True,
               help="Install Rtools with R. Windows ONLY!")
 @click.option('--verbose', '-v', is_flag=True,
               help="Show verbose cli output.")
@@ -77,7 +77,7 @@ def install(ctx, version, clear, without_make, check, installer, install_info,
             install_pdf, install_tests, test_check, test_check_devel,
             test_check_all, verbose, with_rtools):
     # Configure
-    ctx.invoke(configure, version=version, clear=clear, verbose=verbose)
+    ctx.invoke(configure, version=version, clear=clear, with_rtools=with_rtools, verbose=verbose)
     if ctx.obj['os'] != "windows":
         # Install with make
         ctx.invoke(make, version=version, clear=clear, without_make=without_make,
@@ -98,7 +98,7 @@ def install(ctx, version, clear, without_make, check, installer, install_info,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
 @click.option("--overwrite-source", default=False,
               help="Download and overwrite the source tarball.", show_default=True)
-@click.option('--with-rtools', '-r', is_flag=True,
+@click.option('--with-rtools', '-r', default=False, show_default=True,
               help="Install Rtools with R. Windows ONLY!")
 @click.option('--verbose', '-v', is_flag=True,
               help="Show verbose cli output.")

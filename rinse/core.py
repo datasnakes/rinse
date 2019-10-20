@@ -11,7 +11,7 @@ import re
 import urllib.request
 import ctypes
 import sys
-
+import difflib
 from rinse import cookies
 from rinse.utils import system_cmd
 
@@ -74,10 +74,20 @@ class BaseInstallR(object):
             avail_versions = self.get_versions()
             if version in avail_versions:
                 self.version = version
+            ## user version specification error handling
             else:
-                self.logger.error("Cannot find specified version '%s'. The list of available versions are:" % version)
-                self.logger.info(avail_versions)
-                sys.exit(0)
+                close_match = difflib.get_close_matches(version, avail_versions, n=1)
+                if close_match[0]:
+                    self.logger.error("Cannot find specified version '%s', did you mean '%s'?" % (version, close_match[0]))
+                    response = input('[Y/n]?: ')
+                    if response.lower() == "y" or response.lower() == "yes":
+                        self.version = close_match[0]
+                    else:
+                        sys.exit(0)
+                else:
+                    self.logger.error("Cannot find specified version '%s'. The list of available versions are:" % version)
+                    self.logger.info(avail_versions)
+                    sys.exit(0)
         self.repos = repos
 
     def initial_setup(self):
@@ -299,7 +309,6 @@ class WindowsInstallR(BaseInstallR):
         super().__init__(path=path, version=version, repos=repos, method=method, name=name, init=init, verbose=verbose)
         self.config_clear = config_clear
         self.config_keep = config_keep
-        self.version = version
         self.src_file_path = self.src_path
         if glbl is not None:
             self.global_interpreter(version=glbl)

@@ -139,7 +139,7 @@ class BaseInstallR(object):
                 # print(environ["PATH"])
         elif self.os == "mac":
             #TODO:
-            print("Hello Mac User")
+            self.logger.info("MacOS is not currently supported.")
         else:
             raise EnvironmentError("Unsupported version of OS: %s" % self.os)
 
@@ -343,7 +343,7 @@ class WindowsInstallR(BaseInstallR):
 
             except KeyboardInterrupt:
                 f.close()
-                print("\n Ctrl-c pressed. Aborting!")
+                self.logger.error("\n Ctrl-c pressed. Aborting!")
                 delete_cmd = "del %s" % filepath
                 system_cmd(cmd=delete_cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
                 sys.exit(0)
@@ -373,16 +373,20 @@ class WindowsInstallR(BaseInstallR):
         # Check the temp directory if necessary
         self.clear_tmp_dir()
         # Run the R exe silently
-        print("R downloaded successfully. Waiting for R to install...")
-        cmd = '%s /VERYSILENT /DIR=%s' % (self.src_file_path, self.tmp_path)
-        system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-        self.logger.info("Installing %s" % self.src_file_path.name)
-        # Configure rinse-bin for the configuration process
-        rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
-        if rinse_bin.exists():
-            rmtree(rinse_bin)
-            self.logger.debug("Removing existing rinse folder.")
-        mkdir(str(rinse_bin))
+        try:
+            self.logger.info("\nR downloaded successfully. \nWaiting for R to install...")
+            cmd = '%s /VERYSILENT /DIR=%s' % (self.src_file_path, self.tmp_path)
+            system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            self.logger.info("Installing %s" % self.src_file_path.name)
+            # Configure rinse-bin for the configuration process
+            rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
+            if rinse_bin.exists():
+                rmtree(rinse_bin)
+                self.logger.debug("Removing existing rinse folder.")
+            mkdir(str(rinse_bin))
+        except IndexError:
+            self.logger.error("Installation unsuccessful. Aborting.")
+            sys.exit(0)
         return rinse_bin
 
     def clear_tmp_dir(self):

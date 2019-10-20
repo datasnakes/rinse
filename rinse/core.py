@@ -340,6 +340,7 @@ class WindowsInstallR(BaseInstallR):
     def _url_setup(self):
         if self.version == "latest":
             ver = self.get_versions()[0]
+            self.version = ver
             url = "https://cloud.r-project.org/bin/windows/base/old/%s/R-%s-win.exe" % (ver, ver)
             filename = "R-%s-win.exe" % ver
         else:
@@ -393,21 +394,23 @@ class WindowsInstallR(BaseInstallR):
         versions = re.findall(r'>R ([0-9].*?)</a>', str(respData))
         return versions
 
-    def download_rtools(self, r_version):
-        base_url = "https://cran.r-project.org/bin/windows/Rtools/Rtools{}.exe"
-        if r_version >= "3.3":
-            url = base_url.format('35')
-        elif r_version == "3.2":
-            url = base_url.format('33')
-        elif r_version == "3.1":
-            url = base_url.format('32')
-        elif r_version == "3.0":
-            url = base_url.format('31')
+    def download_rtools(self):
+        rtools_exe = "Rtools{}.exe"
+        base_url = "https://cran.r-project.org/bin/windows/Rtools/"
+        if self.version >= "3.3":
+            file_name = rtools_exe.format('35')
+        elif self.version == "3.2":
+            file_name = rtools_exe.format('33')
+        elif self.version == "3.1":
+            file_name = rtools_exe.format('32')
+        elif self.version == "3.0":
+           file_name = rtools_exe.format('31')
         else:
             self.logger.error('%s.x R versions are not supported.')
         
         # Download the Rtools exe
-        file_name = "Rtools{}.exe".format(r_version)
+        self.rtools_file = file_name
         self.rtools_path = self.src_path / "rtools" / Path(file_name)
+        url = base_url + file_name
         self._url_download(url=url, filepath=self.rtools_path, 
-                           filename=self.rtools_path.name)
+                           filename=file_name)

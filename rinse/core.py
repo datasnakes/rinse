@@ -323,23 +323,31 @@ class WindowsInstallR(BaseInstallR):
 
     def _url_download(self, url, filepath, filename):  
         with open(filepath, "wb") as f:
-            self.logger.info("Downloading %s" % filename)
-            response = requests.get(url, stream=True)
-            total_length = response.headers.get('content-length')
+            try:
+                self.logger.info("Downloading %s" % filename)
+                response = requests.get(url, stream=True)
+                total_length = response.headers.get('content-length')
 
-            if not total_length:  # no content length header
-                f.write(response.content)
-            else:
-                dl = 0
-                total_length = int(total_length)
-                for data in response.iter_content(chunk_size=4096):
-                    dl += len(data)
-                    f.write(data)
-                    done = int(100 * dl / total_length)
-                    half_done = int(done/2)
-                    sys.stdout.write("\r[%s%s] %d%% complete" % ('=' * half_done, ' ' * (50-half_done), done))
-                    sys.stdout.flush()
-                    
+                if not total_length:  # no content length header
+                    f.write(response.content)
+                else:
+                    dl = 0
+                    total_length = int(total_length)
+                    for data in response.iter_content(chunk_size=4096):
+                        dl += len(data)
+                        f.write(data)
+                        done = int(100 * dl / total_length)
+                        half_done = int(done/2)
+                        sys.stdout.write("\r[%s%s] %d%% complete" % ('=' * half_done, ' ' * (50-half_done), done))
+                        sys.stdout.flush()
+
+            except KeyboardInterrupt:
+                f.close()
+                print("\n Ctrl-c pressed. Aborting!")
+                delete_cmd = "del %s" % filepath
+                system_cmd(cmd=delete_cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+                sys.exit(0)
+
     def source_download(self, overwrite):
         # Download the source exe
         url, file_name = self._url_setup()

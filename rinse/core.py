@@ -77,7 +77,7 @@ class BaseInstallR(object):
             ## user version specification error handling
             else:
                 close_match = difflib.get_close_matches(version, avail_versions, n=1)
-                if close_match[0]:
+                if len(close_match)>0:
                     self.logger.error("Cannot find specified version '%s', did you mean '%s'?" % (version, close_match[0]))
                     response = input('[Y/n]?: ')
                     if response.lower() == "y" or response.lower() == "yes":
@@ -348,6 +348,9 @@ class WindowsInstallR(BaseInstallR):
                 system_cmd(cmd=delete_cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
                 sys.exit(0)
 
+        sys.stdout.write('\n')
+        self.logger.info("%s Downloaded Successfully" % filename)
+
     def source_download(self, overwrite):
         # Download the source exe
         url, file_name = self._url_setup()
@@ -374,7 +377,7 @@ class WindowsInstallR(BaseInstallR):
         self.clear_tmp_dir()
         # Run the R exe silently
         try:
-            self.logger.info("\nR downloaded successfully. \nWaiting for R to install...")
+            self.logger.info("Waiting for R to install...")
             cmd = '%s /VERYSILENT /DIR=%s' % (self.src_file_path, self.tmp_path)
             system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
             self.logger.info("Installing %s" % self.src_file_path.name)
@@ -387,6 +390,8 @@ class WindowsInstallR(BaseInstallR):
         except IndexError:
             self.logger.error("Installation unsuccessful. Aborting.")
             sys.exit(0)
+
+        self.logger.info("R successfully installed in %s" % self.tmp_path)
         return rinse_bin
 
     def clear_tmp_dir(self):

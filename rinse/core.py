@@ -362,6 +362,7 @@ class WindowsInstallR(BaseInstallR):
         return
 
     def _url_setup(self):
+
         if self.version == "latest":
             ver = self.get_versions()[0]
             url = "https://cloud.r-project.org/bin/windows/base/old/%s/R-%s-win.exe" % (ver, ver)

@@ -186,11 +186,9 @@ class LinuxInstallR(BaseInstallR):
         # Download the source tarball
         if self.version == "latest":
             url = "%s/src/base/R-latest.tar.gz" % self.repos
-            self.logger.info("Downloading the latest R version.")
         else:
             major_version = self.version[0:1]
             url = "%s/src/base/R-%s/R-%s.tar.gz" % (self.repos, major_version, self.version)
-            self.logger.info("Downloading R version %s" % major_version)
         src_file_url = requests.get(url=url)
         src_file_path = self.src_path / "cran" / Path(url).name
         if (not src_file_path.exists()) or overwrite:
@@ -313,14 +311,6 @@ class WindowsInstallR(BaseInstallR):
         if glbl is not None:
             self.global_interpreter(version=glbl)
 
-    def installer(self):
-        if self.method == "source":
-            src_file_path = self.source_download()
-            self.source_setup(src_file_path=src_file_path)
-            self.create_rhome()
-        elif self.method == "local":
-            self.use_local()
-
     def _url_download(self, url, filepath, filename):  
         with open(filepath, "wb") as f:
             try:
@@ -351,20 +341,21 @@ class WindowsInstallR(BaseInstallR):
         sys.stdout.write('\n')
         self.logger.info("%s Downloaded Successfully" % filename)
 
-    def source_download(self, overwrite):
-        # Download the source exe
-        url, file_name = self._url_setup()
-        self.src_file_path = self.src_path / "cran" / Path(file_name)
+    # def source_download(self, overwrite):
+    #     # Download the source exe
+    #     url, file_name = self._url_setup()
+    #     self.src_file_path = self.src_path / "cran" / Path(file_name)
 
-        if (not self.src_file_path.exists()) or overwrite:
-            self._url_download(url=url, filepath=self.src_file_path, 
-                               filename=file_name)
-        return
+    #     if (not self.src_file_path.exists()) or overwrite:
+    #         self._url_download(url=url, filepath=self.src_file_path, 
+    #                            filename=file_name)
+    #     return
 
     def _url_setup(self):
 
         if self.version == "latest":
             ver = self.get_versions()[0]
+            self.version = ver
             url = "https://cloud.r-project.org/bin/windows/base/old/%s/R-%s-win.exe" % (ver, ver)
             filename = "R-%s-win.exe" % ver
         else:
@@ -373,31 +364,79 @@ class WindowsInstallR(BaseInstallR):
             filename = "R-%s-win.exe" % ver
         return url, filename
 
-    def source_setup(self, src_file_path):
-        """
-        :param src_file_path: src_file_path IS NONE!!!!! DON'T USE IT!!! USE self.src_file_path INSTEAD
-        :return:
-        """
+
+    def _install_exe(self, exe_file_path):
         # Check the temp directory if necessary
         self.clear_tmp_dir()
         # Run the R exe silently
+        cmd = '%s /VERYSILENT /DIR=%s' % (exe_file_path, self.tmp_path)
+        self.logger.info("Installing R in %s" % exe_file_path)
+        system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+
+
+    def source_download(self, overwrite, with_rtools):
+        # Download the source exe
+        url, file_name = self._url_setup()
+        self.src_file_path = self.src_path / "cran" / Path(file_name)
+        src_file_path = self.src_file_path
+
+        if (not self.src_file_path.exists()) or overwrite:
+            self._url_download(url=url, filepath=self.src_file_path, 
+                               filename=file_name)
+            
+        if with_rtools:
+            self.setup_rtools()
+        return src_file_path
+    
+    def installer(self):
+        if self.method == "source":
+            src_file_path, rtools_path = self.source_download()
+            self.source_setup()
+            self.create_rhome()
+        elif self.method == "local":
+            self.use_local()
+
+    # def source_setup(self, src_file_path):
+    #     """
+    #     :param src_file_path: src_file_path IS NONE!!!!! DON'T USE IT!!! USE self.src_file_path INSTEAD
+    #     :return:
+    #     """
+    #     # Check the temp directory if necessary
+    #     self.clear_tmp_dir()
+    #     # Run the R exe silently
+    #     try:
+    #         self.logger.info("Waiting for R to install...")
+    #         cmd = '%s /VERYSILENT /DIR=%s' % (self.src_file_path, self.tmp_path)
+    #         system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+    #         self.logger.info("Installing %s" % self.src_file_path.name)
+    #         # Configure rinse-bin for the configuration process
+    #         rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
+    #         if rinse_bin.exists():
+    #             rmtree(rinse_bin)
+    #             self.logger.debug("Removing existing rinse folder.")
+    #         mkdir(str(rinse_bin))
+    #     except IndexError:
+    #         self.logger.error("Installation unsuccessful. Aborting.")
+    #         sys.exit(0)
+
+    #     self.logger.info("R successfully installed in %s" % self.tmp_path)
+        
+    def source_setup(self):
+        # Install the R exe
+        self._install_exe(exe_file_path=self.src_file_path)
+        # Configure rinse-bin for the configuration process
         try:
-            self.logger.info("Waiting for R to install...")
-            cmd = '%s /VERYSILENT /DIR=%s' % (self.src_file_path, self.tmp_path)
-            system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-            self.logger.info("Installing %s" % self.src_file_path.name)
-            # Configure rinse-bin for the configuration process
             rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
             if rinse_bin.exists():
                 rmtree(rinse_bin)
                 self.logger.debug("Removing existing rinse folder.")
             mkdir(str(rinse_bin))
+            self.logger.info("R successfully installed in %s" % self.tmp_path)
+            return rinse_bin
+
         except IndexError:
             self.logger.error("Installation unsuccessful. Aborting.")
             sys.exit(0)
-
-        self.logger.info("R successfully installed in %s" % self.tmp_path)
-        return rinse_bin
 
     def clear_tmp_dir(self):
         # Set up the temporary directory for installation
@@ -408,6 +447,7 @@ class WindowsInstallR(BaseInstallR):
             for vrs in self.config_clear:
                 if vrs not in self.config_keep:
                     rmtree(str(self.tmp_path / Path("R-%s" % vrs)))
+
 
     def create_rhome(self):
         # Set up R_HOME
@@ -429,21 +469,33 @@ class WindowsInstallR(BaseInstallR):
         versions = re.findall(r'>R ([0-9].*?)</a>', str(respData))
         return versions
 
-    def download_rtools(self, r_version):
-        base_url = "https://cran.r-project.org/bin/windows/Rtools/Rtools{}.exe"
-        if r_version >= "3.3":
-            url = base_url.format('35')
-        elif r_version == "3.2":
-            url = base_url.format('33')
-        elif r_version == "3.1":
-            url = base_url.format('32')
-        elif r_version == "3.0":
-            url = base_url.format('31')
+    def download_rtools(self):
+        rtools_exe = "Rtools{}.exe"
+        base_url = "https://cran.r-project.org/bin/windows/Rtools/"
+        if self.version >= "3.3":
+            file_name = rtools_exe.format('35')
+        elif self.version == "3.2":
+            file_name = rtools_exe.format('33')
+        elif self.version == "3.1":
+            file_name = rtools_exe.format('32')
+        elif self.version == "3.0":
+           file_name = rtools_exe.format('31')
         else:
-            self.logger.error('%s.x R versions are not supported.')
+            self.logger.error('%s.x R versions are not supported.' % self.version)
         
         # Download the Rtools exe
-        file_name = "Rtools{}.exe".format(r_version)
-        self.rtools_path = self.src_path / "rtools" / Path(file_name)
-        self._url_download(url=url, filepath=self.rtools_path, 
-                           filename=self.rtools_path.name)
+        self.rtools_file = file_name
+        rtools_path = self.src_path / "rtools"
+        if not rtools_path.exists():
+            self.logger.debug("Creating Rtools directory in %s" % rtools_path)
+            rtools_path.mkdir()
+        rtools_url = base_url + file_name
+        rtools_file_path = self.src_path / "rtools" / Path(file_name)
+        self._url_download(url=rtools_url, filepath=rtools_file_path, 
+                           filename=file_name)
+        return rtools_path
+        
+    def setup_rtools(self):
+        rtools_path = self.download_rtools()
+        # Install the Rtools exe
+        self._install_exe(exe_file_path=rtools_path)

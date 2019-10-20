@@ -27,7 +27,7 @@ classifiers = [
     ]
 
 [tool.poetry.dependencies]
-python = ">=3.4"
+python = ">=3.5"
 click = "^7.0"
 cookiecutter = "^1.6"
 

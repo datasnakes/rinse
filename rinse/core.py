@@ -341,18 +341,7 @@ class WindowsInstallR(BaseInstallR):
         sys.stdout.write('\n')
         self.logger.info("%s Downloaded Successfully" % filename)
 
-    # def source_download(self, overwrite):
-    #     # Download the source exe
-    #     url, file_name = self._url_setup()
-    #     self.src_file_path = self.src_path / "cran" / Path(file_name)
-
-    #     if (not self.src_file_path.exists()) or overwrite:
-    #         self._url_download(url=url, filepath=self.src_file_path, 
-    #                            filename=file_name)
-    #     return
-
     def _url_setup(self):
-
         if self.version == "latest":
             ver = self.get_versions()[0]
             self.version = ver
@@ -395,36 +384,11 @@ class WindowsInstallR(BaseInstallR):
             self.create_rhome()
         elif self.method == "local":
             self.use_local()
-
-    # def source_setup(self, src_file_path):
-    #     """
-    #     :param src_file_path: src_file_path IS NONE!!!!! DON'T USE IT!!! USE self.src_file_path INSTEAD
-    #     :return:
-    #     """
-    #     # Check the temp directory if necessary
-    #     self.clear_tmp_dir()
-    #     # Run the R exe silently
-    #     try:
-    #         self.logger.info("Waiting for R to install...")
-    #         cmd = '%s /VERYSILENT /DIR=%s' % (self.src_file_path, self.tmp_path)
-    #         system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-    #         self.logger.info("Installing %s" % self.src_file_path.name)
-    #         # Configure rinse-bin for the configuration process
-    #         rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
-    #         if rinse_bin.exists():
-    #             rmtree(rinse_bin)
-    #             self.logger.debug("Removing existing rinse folder.")
-    #         mkdir(str(rinse_bin))
-    #     except IndexError:
-    #         self.logger.error("Installation unsuccessful. Aborting.")
-    #         sys.exit(0)
-
-    #     self.logger.info("R successfully installed in %s" % self.tmp_path)
         
     def source_setup(self):
         # Install the R exe
         self._install_exe(exe_file_path=self.src_file_path)
-        # Configure rinse-bin for the configuration process
+        # Create rinse-bin for the configuration process
         try:
             rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
             if rinse_bin.exists():
@@ -433,7 +397,6 @@ class WindowsInstallR(BaseInstallR):
             mkdir(str(rinse_bin))
             self.logger.info("R successfully installed in %s" % self.tmp_path)
             return rinse_bin
-
         except IndexError:
             self.logger.error("Installation unsuccessful. Aborting.")
             sys.exit(0)
@@ -469,7 +432,7 @@ class WindowsInstallR(BaseInstallR):
         versions = re.findall(r'>R ([0-9].*?)</a>', str(respData))
         return versions
 
-    def download_rtools(self):
+    def _download_rtools(self):
         rtools_exe = "Rtools{}.exe"
         base_url = "https://cran.r-project.org/bin/windows/Rtools/"
         if self.version >= "3.3":
@@ -496,6 +459,6 @@ class WindowsInstallR(BaseInstallR):
         return rtools_path
         
     def setup_rtools(self):
-        rtools_path = self.download_rtools()
+        rtools_path = self._download_rtools()
         # Install the Rtools exe
         self._install_exe(exe_file_path=rtools_path)

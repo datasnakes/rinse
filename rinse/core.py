@@ -373,6 +373,10 @@ class WindowsInstallR(BaseInstallR):
         return url, filename
 
     def source_setup(self, src_file_path):
+        """
+        :param src_file_path: src_file_path IS NONE!!!!! DON'T USE IT!!! USE self.src_file_path INSTEAD
+        :return:
+        """
         # Check the temp directory if necessary
         self.clear_tmp_dir()
         # Run the R exe silently

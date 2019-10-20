@@ -173,11 +173,9 @@ class LinuxInstallR(BaseInstallR):
         # Download the source tarball
         if self.version == "latest":
             url = "%s/src/base/R-latest.tar.gz" % self.repos
-            self.logger.info("Downloading the latest R version.")
         else:
             major_version = self.version[0:1]
             url = "%s/src/base/R-%s/R-%s.tar.gz" % (self.repos, major_version, self.version)
-            self.logger.info("Downloading R version %s" % major_version)
         src_file_url = requests.get(url=url)
         src_file_path = self.src_path / "cran" / Path(url).name
         if (not src_file_path.exists()) or overwrite:
@@ -301,14 +299,6 @@ class WindowsInstallR(BaseInstallR):
         if glbl is not None:
             self.global_interpreter(version=glbl)
 
-    def installer(self):
-        if self.method == "source":
-            src_file_path = self.source_download()
-            self.source_setup(src_file_path=src_file_path)
-            self.create_rhome()
-        elif self.method == "local":
-            self.use_local()
-
     def _url_download(self, url, filepath, filename):  
         with open(filepath, "wb") as f:
             self.logger.info("Downloading %s" % filename)
@@ -326,16 +316,6 @@ class WindowsInstallR(BaseInstallR):
                     done = int(50 * dl / total_length)
                     sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50 - done)))
                     sys.stdout.flush()
-                    
-    def source_download(self, overwrite):
-        # Download the source exe
-        url, file_name = self._url_setup()
-        self.src_file_path = self.src_path / "cran" / Path(file_name)
-
-        if (not self.src_file_path.exists()) or overwrite:
-            self._url_download(url=url, filepath=self.src_file_path, 
-                               filename=file_name)
-        return
 
     def _url_setup(self):
         if self.version == "latest":
@@ -345,17 +325,44 @@ class WindowsInstallR(BaseInstallR):
             filename = "R-%s-win.exe" % ver
         else:
             major_version = self.version[0:1]
+            ver = self.version
             url = "%s/bin/windows/base/R-%s.%s-win.exe" % (self.repos, major_version, self.version)
-            self.logger.info("Downloading R version %s" % major_version)
+            filename = "R-%s-win.exe" % ver
         return url, filename
 
-    def source_setup(self, src_file_path):
+    def _install_exe(self, exe_file_path):
         # Check the temp directory if necessary
         self.clear_tmp_dir()
         # Run the R exe silently
-        cmd = '%s /VERYSILENT /DIR=%s' % (self.src_file_path, self.tmp_path)
+        cmd = '%s /VERYSILENT /DIR=%s' % (exe_file_path, self.tmp_path)
         system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
-        self.logger.info("Installing %s" % self.src_file_path.name)
+        self.logger.info("Installing %s" % exe_file_path)
+
+    def source_download(self, overwrite, with_rtools):
+        # Download the source exe
+        url, file_name = self._url_setup()
+        self.src_file_path = self.src_path / "cran" / Path(file_name)
+        src_file_path = self.src_file_path
+
+        if (not self.src_file_path.exists()) or overwrite:
+            self._url_download(url=url, filepath=self.src_file_path, 
+                               filename=file_name)
+            
+        if with_rtools:
+            self.setup_rtools()
+        return src_file_path
+    
+    def installer(self):
+        if self.method == "source":
+            src_file_path, rtools_path = self.source_download()
+            self.source_setup()
+            self.create_rhome()
+        elif self.method == "local":
+            self.use_local()
+
+    def source_setup(self):
+        # Install the R exe
+        self._install_exe(exe_file_path=self.src_file_path)
         # Configure rinse-bin for the configuration process
         rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
         if rinse_bin.exists():
@@ -406,11 +413,21 @@ class WindowsInstallR(BaseInstallR):
         elif self.version == "3.0":
            file_name = rtools_exe.format('31')
         else:
-            self.logger.error('%s.x R versions are not supported.')
+            self.logger.error('%s.x R versions are not supported.' % self.version)
         
         # Download the Rtools exe
         self.rtools_file = file_name
-        self.rtools_path = self.src_path / "rtools" / Path(file_name)
-        url = base_url + file_name
-        self._url_download(url=url, filepath=self.rtools_path, 
+        rtools_path = self.src_path / "rtools"
+        if not rtools_path.exists():
+            self.logger.debug("Creating Rtools directory in %s" % rtools_path)
+            rtools_path.mkdir()
+        rtools_url = base_url + file_name
+        rtools_file_path = self.src_path / "rtools" / Path(file_name)
+        self._url_download(url=rtools_url, filepath=rtools_file_path, 
                            filename=file_name)
+        return rtools_path
+        
+    def setup_rtools(self, rtools_path):
+        rtools_path = self.download_rtools()
+        # Install the Rtools exe
+        self._install_exe(exe_file_path=rtools_path)

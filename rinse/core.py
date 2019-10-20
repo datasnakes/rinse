@@ -308,29 +308,33 @@ class WindowsInstallR(BaseInstallR):
             self.create_rhome()
         elif self.method == "local":
             self.use_local()
-            
+
+    def _url_download(self, url, filepath, filename):  
+        with open(filepath, "wb") as f:
+            self.logger.info("Downloading %s" % filename)
+            response = requests.get(url, stream=True)
+            total_length = response.headers.get('content-length')
+
+            if not total_length:  # no content length header
+                f.write(response.content)
+            else:
+                dl = 0
+                total_length = int(total_length)
+                for data in response.iter_content(chunk_size=4096):
+                    dl += len(data)
+                    f.write(data)
+                    done = int(50 * dl / total_length)
+                    sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50 - done)))
+                    sys.stdout.flush()
+                    
     def source_download(self, overwrite):
         # Download the source exe
         url, file_name = self._url_setup()
         self.src_file_path = self.src_path / "cran" / Path(file_name)
 
         if (not self.src_file_path.exists()) or overwrite:
-            with open(self.src_file_path, "wb") as f:
-                self.logger.info("Downloading %s" % file_name)
-                response = requests.get(url, stream=True)
-                total_length = response.headers.get('content-length')
-
-                if not total_length:  # no content length header
-                    f.write(response.content)
-                else:
-                    dl = 0
-                    total_length = int(total_length)
-                    for data in response.iter_content(chunk_size=4096):
-                        dl += len(data)
-                        f.write(data)
-                        done = int(50 * dl / total_length)
-                        sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50 - done)))
-                        sys.stdout.flush()
+            self._url_download(url=url, filepath=self.src_file_path, 
+                               filename=file_name)
         return
 
     def _url_setup(self):
@@ -389,5 +393,21 @@ class WindowsInstallR(BaseInstallR):
         versions = re.findall(r'>R ([0-9].*?)</a>', str(respData))
         return versions
 
-    def download_rtools(self):
-        base_url = "https://cran.r-project.org/bin/windows/testing/rtools{}-x86_64.exe"
+    def download_rtools(self, r_version):
+        base_url = "https://cran.r-project.org/bin/windows/Rtools/Rtools{}.exe"
+        if r_version >= "3.3":
+            url = base_url.format('35')
+        elif r_version == "3.2":
+            url = base_url.format('33')
+        elif r_version == "3.1":
+            url = base_url.format('32')
+        elif r_version == "3.0":
+            url = base_url.format('31')
+        else:
+            self.logger.error('%s.x R versions are not supported.')
+        
+        # Download the Rtools exe
+        file_name = "Rtools{}.exe".format(r_version)
+        self.rtools_path = self.src_path / "rtools" / Path(file_name)
+        self._url_download(url=url, filepath=self.rtools_path, 
+                           filename=self.rtools_path.name)

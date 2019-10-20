@@ -339,7 +339,7 @@ class WindowsInstallR(BaseInstallR):
                 sys.exit(0)
 
         sys.stdout.write('\n')
-        self.logger.info("%s Downloaded Successfully" % filename)
+        self.logger.info("\n%s Downloaded Successfully" % filename)
 
     def _url_setup(self):
         if self.version == "latest":
@@ -456,9 +456,9 @@ class WindowsInstallR(BaseInstallR):
         rtools_file_path = self.src_path / "rtools" / Path(file_name)
         self._url_download(url=rtools_url, filepath=rtools_file_path, 
                            filename=file_name)
-        return rtools_path
+        return rtools_file_path
         
     def setup_rtools(self):
-        rtools_path = self._download_rtools()
+        rtools_file_path = self._download_rtools()
         # Install the Rtools exe
-        self._install_exe(exe_file_path=rtools_path)
+        self._install_exe(exe_file_path=rtools_file_path)

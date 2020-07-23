@@ -170,7 +170,7 @@ def make(ctx, without_make, version, clear, check, installer, install_info, inst
 def test(ctx, version, clear, check, check_devel, check_all, verbose):
     installR = ctx.obj['installR']
     if ctx.obj['os'] == "windows":
-        click.echo('ERROR: Make is not supported for Windows.')
+        click.echo('ERROR: Tests are not supported for Windows.')
     else:
         installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'],
                             method="source", repos=ctx.obj['repos'], config_clear=clear,

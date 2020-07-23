@@ -308,7 +308,7 @@ class WindowsInstallR(BaseInstallR):
         self.config_clear = config_clear
         self.config_keep = config_keep
         self.src_file_path = self.src_path
-        if glbl is not None:
+        if glbl:
             self.global_interpreter(version=glbl)
 
     def _url_download(self, url, filepath, filename):  

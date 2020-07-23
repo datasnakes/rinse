@@ -22,7 +22,7 @@ class BaseInstallR(object):
         """
         Initiation function
         :param path: Absolute install path
-        :param name: Directory name; defaul = .rinse
+        :param name: Directory name; default = .rinse
         :param version: r version
         :param repos: the repo used for downloading source file
         :param method:

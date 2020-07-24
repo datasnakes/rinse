@@ -127,7 +127,7 @@ class BaseInstallR(object):
                         stdout = system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
         # For Windows Installation
         elif self.os == "windows":
-            self.logger.info("Please add %s to your Windows Environment Variable" % self.rinse_path.expanduser().absolute())
+            self.logger.info("Please add %s to your Windows PATH" % self.rinse_path.expanduser().absolute())
             # adding beRi to environment var
             # if str(self.bin_path) not in environ["PATH"]:
             #     print(str(self.rinse_path.expanduser().absolute()))

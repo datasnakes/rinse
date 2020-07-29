@@ -18,7 +18,8 @@ from rinse.utils import system_cmd
 
 class BaseInstallR(object):
 
-    def __init__(self, path, name, version=None, repos=None, method=None, init=None, verbose=False, os=None):
+    def __init__(self, path, name, version=None, repos=None,
+                 method=None, init=None, verbose=False, os=None):
         """
         Initiation function
         :param path: Absolute install path
@@ -45,7 +46,8 @@ class BaseInstallR(object):
         # Set up logger
         # Change level of logger based on verbose paramater.
         if self.verbose:
-            logging.basicConfig(format='[%(levelname)s | %(name)s - line %(lineno)d]: %(message)s')
+            logging.basicConfig(
+                format='[%(levelname)s | %(name)s - line %(lineno)d]: %(message)s')
             # Filter the debug logging
             logging.getLogger("rinse").setLevel(logging.DEBUG)
         else:
@@ -57,35 +59,42 @@ class BaseInstallR(object):
         self.cookie_jar = Path(resource_filename(cookies.__name__, ''))
         if init:
             if self.rinse_path.exists():
-                self.logger.error("The rinse path you have set already exists: %s" % self.rinse_path)
+                self.logger.error(
+                    "The rinse path you have set already exists: %s" %
+                    self.rinse_path)
             elif not self.rinse_path.exists():
                 self.initial_setup()
                 self.logger.info("Initializing rinse.")
         elif not self.rinse_path.exists():
-            self.logger.error("You have not initialized rinse yet.  Please run 'rinse init' to continue.")
+            self.logger.error(
+                "You have not initialized rinse yet.  Please run 'rinse init' to continue.")
 
         # Create class variables from parameters
         self.method = method  # source for now spack for later
 
         # Checking validity of specified version
-        if version == None or version == "--help" or version == "latest":
+        if version is None or version == "--help" or version == "latest":
             self.version = "latest"
         else:
             avail_versions = self.get_versions()
             if version in avail_versions:
                 self.version = version
-            ## user version specification error handling
+            # user version specification error handling
             else:
                 close_match = difflib.get_close_matches(version, avail_versions, n=1)
-                if len(close_match)>0:
-                    self.logger.error("Cannot find specified version '%s', did you mean '%s'?" % (version, close_match[0]))
+                if len(close_match) > 0:
+                    self.logger.error(
+                        "Cannot find specified version '%s', did you mean '%s'?" %
+                        (version, close_match[0]))
                     response = input('[Y/n]?: ')
                     if response.lower() == "y" or response.lower() == "yes":
                         self.version = close_match[0]
                     else:
                         sys.exit(0)
                 else:
-                    self.logger.error("Cannot find specified version '%s'. The list of available versions are:" % version)
+                    self.logger.error(
+                        "Cannot find specified version '%s'. The list of available versions are:" %
+                        version)
                     self.logger.info(avail_versions)
                     sys.exit(0)
         self.repos = repos
@@ -100,7 +109,12 @@ class BaseInstallR(object):
         e_c = {
             "rinse_init_dir": self.name
         }
-        cookiecutter(str(init_cookie), no_input=True, extra_context=e_c, output_dir=str(self.path))
+        cookiecutter(
+            str(init_cookie),
+            no_input=True,
+            extra_context=e_c,
+            output_dir=str(
+                self.path))
         # Setup environment variables
         if self.os == "linux":
             if str(self.bin_path) not in environ["PATH"]:
@@ -124,33 +138,35 @@ class BaseInstallR(object):
                         with open(str(set_prof), "a+") as b_prof:
                             b_prof.write("export PATH=\"%s:$PATH\"" % str(self.bin_path))
                         cmd = ["source %s" % str(set_prof)]
-                        stdout = system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+                        stdout = system_cmd(
+                            cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
         # For Windows Installation
         elif self.os == "windows":
-            self.logger.info("Please add %s to your Windows PATH" % self.rinse_path.expanduser().absolute())
+            self.logger.info(
+                "Please add %s to your Windows PATH" %
+                self.rinse_path.expanduser().absolute())
             # adding beRi to environment var
             # if str(self.bin_path) not in environ["PATH"]:
             #     print(str(self.rinse_path.expanduser().absolute()))
             #     environ["PATH"] =environ["PATH"] + ';'+ str(self.rinse_path.expanduser().absolute())
             #     cmd = ["set PATH=%s" % str(environ['PATH'])]
             #     system_cmd(cmd=cmd, stdout = sp.PIPE, stderr=sp.STDOUT, shell=True)
-                # subprocess.call('setx /M PATH=%PATH%;' + str(self.rinse_path.expanduser().absolute()), shell=True)
-                # subprocess.call('sqsub -np ' + str(self.rinse_path.expanduser().absolute()), shell=True)
-                # print(environ["PATH"])
+            # subprocess.call('setx /M PATH=%PATH%;' + str(self.rinse_path.expanduser().absolute()), shell=True)
+            # subprocess.call('sqsub -np ' + str(self.rinse_path.expanduser().absolute()), shell=True)
+            # print(environ["PATH"])
         elif self.os == "mac":
-            #TODO:
+            # TODO:
             self.logger.info("MacOS is not currently supported.")
         else:
             raise EnvironmentError("Unsupported version of OS: %s" % self.os)
 
     def hide_file(self, path):
         FILE_ATTRIBUTE_HIDDEN = 0x02
-        ret = ctypes.windll.kernel32.SetFileAttributesW(path,FILE_ATTRIBUTE_HIDDEN)
+        ret = ctypes.windll.kernel32.SetFileAttributesW(path, FILE_ATTRIBUTE_HIDDEN)
         if ret:
             self.logger.info('set to Hidden')
         else:  # return code of zero indicates failure -- raise a Windows error
             raise ctypes.WinError()
-
 
     def get_versions(self):
         url = 'https://cloud.r-project.org/bin/windows/base/old/'
@@ -162,10 +178,19 @@ class BaseInstallR(object):
         versions = re.findall(r'>R ([0-9].*?)</a>', str(respData))
         return versions
 
+
 class LinuxInstallR(BaseInstallR):
 
-    def __init__(self, version, method, name, path, repos, glbl, config_clear, config_keep, init, verbose):
-        super().__init__(path=path, version=version, repos=repos, method=method, name=name, init=init, verbose=verbose)
+    def __init__(self, version, method, name, path, repos, glbl,
+                 config_clear, config_keep, init, verbose):
+        super().__init__(
+            path=path,
+            version=version,
+            repos=repos,
+            method=method,
+            name=name,
+            init=init,
+            verbose=verbose)
         self.config_clear = config_clear
         self.config_keep = config_keep
         if glbl is not None:
@@ -188,7 +213,8 @@ class LinuxInstallR(BaseInstallR):
             url = "%s/src/base/R-latest.tar.gz" % self.repos
         else:
             major_version = self.version[0:1]
-            url = "%s/src/base/R-%s/R-%s.tar.gz" % (self.repos, major_version, self.version)
+            url = "%s/src/base/R-%s/R-%s.tar.gz" % (self.repos,
+                                                    major_version, self.version)
         src_file_url = requests.get(url=url)
         src_file_path = self.src_path / "cran" / Path(url).name
         if (not src_file_path.exists()) or overwrite:
@@ -222,48 +248,98 @@ class LinuxInstallR(BaseInstallR):
             r_home.mkdir()
         if configure_opts == "--help":
             config_proc = ['../configure --help']
-            stdout = system_cmd(cmd=config_proc, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            stdout = system_cmd(
+                cmd=config_proc,
+                stdout=sp.PIPE,
+                stderr=sp.STDOUT,
+                shell=True)
         elif isinstance(configure_opts, str) and len(configure_opts) > 0:
             config_proc = ['../configure --prefix=%s' % str(r_home), configure_opts]
-            stdout = system_cmd(cmd=config_proc, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            stdout = system_cmd(
+                cmd=config_proc,
+                stdout=sp.PIPE,
+                stderr=sp.STDOUT,
+                shell=True)
         else:
             config_proc = ['../configure --prefix=%s' % str(r_home)]
-            stdout = system_cmd(cmd=config_proc, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            stdout = system_cmd(
+                cmd=config_proc,
+                stdout=sp.PIPE,
+                stderr=sp.STDOUT,
+                shell=True)
 
-    def source_make(self, without_make, check, install, install_info, install_pdf, install_tests):
+    def source_make(self, without_make, check, install,
+                    install_info, install_pdf, install_tests):
         rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
         chdir(str(rinse_bin))
         if not without_make:
             make_proc = ['make']
-            stdout = system_cmd(cmd=make_proc, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            stdout = system_cmd(
+                cmd=make_proc,
+                stdout=sp.PIPE,
+                stderr=sp.STDOUT,
+                shell=True)
         if check:
             make_check = ['make check']
-            stdout = system_cmd(cmd=make_check, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            stdout = system_cmd(
+                cmd=make_check,
+                stdout=sp.PIPE,
+                stderr=sp.STDOUT,
+                shell=True)
         if install:
             make_install = ['make install']
-            stdout = system_cmd(cmd=make_install, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            stdout = system_cmd(
+                cmd=make_install,
+                stdout=sp.PIPE,
+                stderr=sp.STDOUT,
+                shell=True)
         if install_info:
             make_info = ['make install-info']
-            stdout = system_cmd(cmd=make_info, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            stdout = system_cmd(
+                cmd=make_info,
+                stdout=sp.PIPE,
+                stderr=sp.STDOUT,
+                shell=True)
         if install_pdf:
             make_pdf = ['make install-pdf']
-            stdout = system_cmd(cmd=make_pdf, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            stdout = system_cmd(
+                cmd=make_pdf,
+                stdout=sp.PIPE,
+                stderr=sp.STDOUT,
+                shell=True)
         if install_tests:
             make_tests = ['make install-tests']
-            stdout = system_cmd(cmd=make_tests, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            stdout = system_cmd(
+                cmd=make_tests,
+                stdout=sp.PIPE,
+                stderr=sp.STDOUT,
+                shell=True)
 
     def source_test(self, check, check_devel, check_all):
-        rinse_bin_tests = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin" / "tests"
+        rinse_bin_tests = self.tmp_path / \
+            listdir(self.tmp_path)[0] / "rinse-bin" / "tests"
         chdir(str(rinse_bin_tests))
         if check:
             test_check = ["../bin/R CMD make check"]
-            stdout = system_cmd(cmd=test_check, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            stdout = system_cmd(
+                cmd=test_check,
+                stdout=sp.PIPE,
+                stderr=sp.STDOUT,
+                shell=True)
         if check_devel:
             test_check_devel = ["../bin/R CMD make check-devel"]
-            stdout = system_cmd(cmd=test_check_devel, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            stdout = system_cmd(
+                cmd=test_check_devel,
+                stdout=sp.PIPE,
+                stderr=sp.STDOUT,
+                shell=True)
         if check_all:
             test_check_all = ["../bin/R CMD make check-all"]
-            stdout = system_cmd(cmd=test_check_all, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+            stdout = system_cmd(
+                cmd=test_check_all,
+                stdout=sp.PIPE,
+                stderr=sp.STDOUT,
+                shell=True)
 
     def global_interpreter(self, version):
         version_name = "R-%s" % version
@@ -273,8 +349,22 @@ class LinuxInstallR(BaseInstallR):
             remove(str(self.bin_path / "Rscript"))
         if Path(self.lib_path / "cran" / version_name / "bin" / "R").exists() or \
                 Path(self.lib_path / "cran" / version_name / "bin" / "Rscript").exists():
-            Path(self.bin_path / "R").symlink_to(self.lib_path / "cran" / version_name / "bin" / "R")
-            Path(self.bin_path / "Rscript").symlink_to(self.lib_path / "cran" / version_name / "bin" / "Rscript")
+            Path(
+                self.bin_path /
+                "R").symlink_to(
+                self.lib_path /
+                "cran" /
+                version_name /
+                "bin" /
+                "R")
+            Path(
+                self.bin_path /
+                "Rscript").symlink_to(
+                self.lib_path /
+                "cran" /
+                version_name /
+                "bin" /
+                "Rscript")
         else:
             self.logger.error("The version of R you are looking for does not exist yet.")
 
@@ -292,26 +382,36 @@ class LinuxInstallR(BaseInstallR):
         raise NotImplementedError("Local installation is not supported at this time.")
 
     def use_spack(self):
-        raise NotImplementedError("Installation with spack is not supported at this time.")
+        raise NotImplementedError(
+            "Installation with spack is not supported at this time.")
 
 
 class MacInstallR(BaseInstallR):
 
     def __init__(self):
-        raise NotImplementedError("Installation of R with rinse on MacOS is not supported at this time.")
+        raise NotImplementedError(
+            "Installation of R with rinse on MacOS is not supported at this time.")
 
 
 class WindowsInstallR(BaseInstallR):
 
-    def __init__(self, version, method, name, path, repos, glbl, config_clear, config_keep, init, verbose):
-        super().__init__(path=path, version=version, repos=repos, method=method, name=name, init=init, verbose=verbose)
+    def __init__(self, version, method, name, path, repos, glbl,
+                 config_clear, config_keep, init, verbose):
+        super().__init__(
+            path=path,
+            version=version,
+            repos=repos,
+            method=method,
+            name=name,
+            init=init,
+            verbose=verbose)
         self.config_clear = config_clear
         self.config_keep = config_keep
         self.src_file_path = self.src_path
         if glbl:
             self.global_interpreter(version=glbl)
 
-    def _url_download(self, url, filepath, filename):  
+    def _url_download(self, url, filepath, filename):
         with open(filepath, "wb") as f:
             try:
                 self.logger.info("Downloading %s" % filename)
@@ -327,8 +427,9 @@ class WindowsInstallR(BaseInstallR):
                         dl += len(data)
                         f.write(data)
                         done = int(100 * dl / total_length)
-                        half_done = int(done/2)
-                        sys.stdout.write("\r[%s%s] %d%% complete" % ('=' * half_done, ' ' * (50-half_done), done))
+                        half_done = int(done / 2)
+                        sys.stdout.write("\r[%s%s] %d%% complete" %
+                                         ('=' * half_done, ' ' * (50 - half_done), done))
                         sys.stdout.flush()
 
             except KeyboardInterrupt:
@@ -344,14 +445,15 @@ class WindowsInstallR(BaseInstallR):
         if self.version == "latest":
             ver = self.get_versions()[0]
             self.version = ver
-            url = "https://cloud.r-project.org/bin/windows/base/old/%s/R-%s-win.exe" % (ver, ver)
+            url = "https://cloud.r-project.org/bin/windows/base/old/%s/R-%s-win.exe" % (
+                ver, ver)
             filename = "R-%s-win.exe" % ver
         else:
             ver = self.version
-            url = "https://cloud.r-project.org/bin/windows/base/old/%s/R-%s-win.exe" % (ver, ver)
+            url = "https://cloud.r-project.org/bin/windows/base/old/%s/R-%s-win.exe" % (
+                ver, ver)
             filename = "R-%s-win.exe" % ver
         return url, filename
-
 
     def _install_exe(self, exe_file_path):
         # Check the temp directory if necessary
@@ -361,7 +463,6 @@ class WindowsInstallR(BaseInstallR):
         self.logger.info("Installing R in %s" % exe_file_path)
         system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
 
-
     def source_download(self, overwrite, with_rtools):
         # Download the source exe
         url, file_name = self._url_setup()
@@ -369,13 +470,13 @@ class WindowsInstallR(BaseInstallR):
         src_file_path = self.src_file_path
 
         if (not self.src_file_path.exists()) or overwrite:
-            self._url_download(url=url, filepath=self.src_file_path, 
+            self._url_download(url=url, filepath=self.src_file_path,
                                filename=file_name)
-            
+
         if with_rtools:
             self.setup_rtools()
         return src_file_path
-    
+
     def installer(self):
         if self.method == "source":
             src_file_path, rtools_path = self.source_download()
@@ -383,7 +484,7 @@ class WindowsInstallR(BaseInstallR):
             self.create_rhome()
         elif self.method == "local":
             self.use_local()
-        
+
     def source_setup(self):
         # Install the R exe
         self._install_exe(exe_file_path=self.src_file_path)
@@ -410,7 +511,6 @@ class WindowsInstallR(BaseInstallR):
                 if vrs not in self.config_keep:
                     rmtree(str(self.tmp_path / Path("R-%s" % vrs)))
 
-
     def create_rhome(self):
         # Set up R_HOME
         rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
@@ -420,10 +520,10 @@ class WindowsInstallR(BaseInstallR):
         if not r_home.exists():
             self.logger.debug("Creating R home directory in %s" % r_home)
             r_home.mkdir()
-       
+
     def get_versions(self):
         url = 'https://cloud.r-project.org/bin/windows/base/old/'
-    
+
         req = urllib.request.Request(url)
         resp = urllib.request.urlopen(req)
         respData = resp.read()
@@ -441,10 +541,10 @@ class WindowsInstallR(BaseInstallR):
         elif self.version == "3.1":
             file_name = rtools_exe.format('32')
         elif self.version == "3.0":
-           file_name = rtools_exe.format('31')
+            file_name = rtools_exe.format('31')
         else:
             self.logger.error('%s.x R versions are not supported.' % self.version)
-        
+
         # Download the Rtools exe
         self.rtools_file = file_name
         rtools_path = self.src_path / "rtools"
@@ -453,10 +553,10 @@ class WindowsInstallR(BaseInstallR):
             rtools_path.mkdir()
         rtools_url = base_url + file_name
         rtools_file_path = self.src_path / "rtools" / Path(file_name)
-        self._url_download(url=rtools_url, filepath=rtools_file_path, 
+        self._url_download(url=rtools_url, filepath=rtools_file_path,
                            filename=file_name)
         return rtools_file_path
-        
+
     def setup_rtools(self):
         rtools_file_path = self._download_rtools()
         # Install the Rtools exe

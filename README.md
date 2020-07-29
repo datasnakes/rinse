@@ -105,9 +105,10 @@ If you need help with using rinse, please [submit an issue](https://github.com/d
 
 ## Maintainers
 
-* Kristen Bystrom
 * Rob Gilmore
-* Bruno Grande
+* Cedric Wang
 * Shaurita Hutchins
 * Roshan Pawar
 * Cedric Wang
+* Bruno Grande
+* Kristen Bystrom

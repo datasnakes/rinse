@@ -333,9 +333,8 @@ class WindowsInstallR(BaseInstallR):
 
             except KeyboardInterrupt:
                 f.close()
-                self.logger.error("\n Ctrl-c pressed. Aborting!")
-                delete_cmd = "del %s" % filepath
-                system_cmd(cmd=delete_cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
+                remove(filepath)
+                self.logger.exception("\n Ctrl-c pressed. Aborting!")
                 sys.exit(0)
 
         sys.stdout.write('\n')

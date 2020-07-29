@@ -5,12 +5,12 @@ python:
   - 3.6
 
 before_install:
-- pip install poetry nose
+  - pip install poetry pytest
 
 # Install rinse
 install:
-- poetry install -v
+  - poetry install -v
 
 # Command to run tests
 # nosetests is being used as a default
-script: nosetests tests/ --verbosity=3
+script: pytest tests

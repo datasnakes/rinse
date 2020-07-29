@@ -196,17 +196,6 @@ class LinuxInstallR(BaseInstallR):
         if glbl is not None:
             self.global_interpreter(version=glbl)
 
-    def installer(self):
-        if self.method == "source":
-            src_file_path = self.source_download()
-            self.source_setup(src_file_path=src_file_path)
-            self.source_configure()
-            self.source_make()
-        elif self.method == "spack":
-            self.use_spack()
-        elif self.method == "local":
-            self.use_local()
-
     def source_download(self, overwrite):
         # Download the source tarball
         if self.version == "latest":
@@ -476,14 +465,6 @@ class WindowsInstallR(BaseInstallR):
         if with_rtools:
             self.setup_rtools()
         return src_file_path
-
-    def installer(self):
-        if self.method == "source":
-            src_file_path, rtools_path = self.source_download()
-            self.source_setup()
-            self.create_rhome()
-        elif self.method == "local":
-            self.use_local()
 
     def source_setup(self):
         # Install the R exe

@@ -398,7 +398,9 @@ class WindowsInstallR(BaseInstallR):
         self.config_keep = config_keep
         self.src_file_path = self.src_path
         if glbl:
-            self.global_interpreter(version=glbl)
+            # XXX This has not been implemented for Windows yet!
+            raise NotImplementedError("Global Interpreter function not written yet.")
+            # self.global_interpreter(version=glbl)
 
     def _url_download(self, url, filepath, filename):
         with open(filepath, "wb") as f:

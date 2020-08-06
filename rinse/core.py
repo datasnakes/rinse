@@ -1,17 +1,19 @@
-from cookiecutter.main import cookiecutter
-from pathlib import Path
-from os import listdir, chdir, mkdir, symlink, remove, environ
-from shutil import rmtree
-from pkg_resources import resource_filename
-import subprocess as sp
-import logging
-import requests
-import tarfile
-import re
-import urllib.request
 import ctypes
-import sys
 import difflib
+import logging
+import re
+import subprocess as sp
+import sys
+import tarfile
+import urllib.request
+from os import chdir, environ, listdir, mkdir, remove, symlink
+from pathlib import Path
+from shutil import rmtree
+
+import requests
+from cookiecutter.main import cookiecutter
+from pkg_resources import resource_filename
+
 from rinse import cookies
 from rinse.utils import system_cmd
 
@@ -20,8 +22,8 @@ class BaseInstallR(object):
 
     def __init__(self, path, name, version=None, repos=None,
                  method=None, init=None, verbose=False, os=None):
-        """
-        Initiation function
+        """Initialization function.
+
         :param path: Absolute install path
         :param name: Directory name; default = .rinse
         :param version: r version
@@ -100,10 +102,7 @@ class BaseInstallR(object):
         self.repos = repos
 
     def initial_setup(self):
-        """
-        setup for rinse init
-        :return:
-        """
+        """Setup for rinse init."""
         # Prepare and run cookiecutter
         init_cookie = self.cookie_jar / Path("init")
         e_c = {
@@ -161,8 +160,18 @@ class BaseInstallR(object):
             raise EnvironmentError("Unsupported version of OS: %s" % self.os)
 
     def hide_file(self, path):
+        """[summary]
+
+        :param path: [description]
+        :type path: [type]
+        :raises a: [description]
+        :raises ctypes.WinError: [description]
+        :return: [description]
+        :rtype: [type]
+        """
         FILE_ATTRIBUTE_HIDDEN = 0x02
-        ret = ctypes.windll.kernel32.SetFileAttributesW(path, FILE_ATTRIBUTE_HIDDEN)
+        ret = ctypes.windll.kernel32.SetFileAttributesW(path,
+                                                        FILE_ATTRIBUTE_HIDDEN)
         if ret:
             self.logger.info('set to Hidden')
         else:  # return code of zero indicates failure -- raise a Windows error
@@ -184,19 +193,22 @@ class LinuxInstallR(BaseInstallR):
     def __init__(self, version, method, name, path, repos, glbl,
                  config_clear, config_keep, init, verbose):
         super().__init__(
-            path=path,
-            version=version,
-            repos=repos,
-            method=method,
-            name=name,
-            init=init,
+            path=path, version=version, repos=repos,
+            method=method, name=name, init=init,
             verbose=verbose)
         self.config_clear = config_clear
         self.config_keep = config_keep
-        if glbl is not None:
+        if glbl:
             self.global_interpreter(version=glbl)
 
     def source_download(self, overwrite):
+        """[summary]
+
+        :param overwrite: [description]
+        :type overwrite: [type]
+        :return: [description]
+        :rtype: [type]
+        """
         # Download the source tarball
         if self.version == "latest":
             url = "%s/src/base/R-latest.tar.gz" % self.repos
@@ -211,6 +223,13 @@ class LinuxInstallR(BaseInstallR):
         return src_file_path
 
     def source_setup(self, src_file_path):
+        """[summary]
+
+        :param src_file_path: [description]
+        :type src_file_path: [type]
+        :return: [description]
+        :rtype: [type]
+        """
         # Check the temp directory if necessary
         self.clear_tmp_dir()
         # Extract the contents of the source tarball
@@ -227,6 +246,11 @@ class LinuxInstallR(BaseInstallR):
         return rinse_bin
 
     def source_configure(self, configure_opts=None):
+        """[summary]
+
+        :param configure_opts: [description], defaults to None
+        :type configure_opts: [type], optional
+        """
         # Set up R_HOME
         rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
         chdir(str(rinse_bin))
@@ -259,6 +283,21 @@ class LinuxInstallR(BaseInstallR):
 
     def source_make(self, without_make, check, install,
                     install_info, install_pdf, install_tests):
+        """[summary]
+
+        :param without_make: [description]
+        :type without_make: [type]
+        :param check: [description]
+        :type check: [type]
+        :param install: [description]
+        :type install: [type]
+        :param install_info: [description]
+        :type install_info: [type]
+        :param install_pdf: [description]
+        :type install_pdf: [type]
+        :param install_tests: [description]
+        :type install_tests: [type]
+        """
         rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
         chdir(str(rinse_bin))
         if not without_make:
@@ -305,6 +344,15 @@ class LinuxInstallR(BaseInstallR):
                 shell=True)
 
     def source_test(self, check, check_devel, check_all):
+        """[summary]
+
+        :param check: [description]
+        :type check: [type]
+        :param check_devel: [description]
+        :type check_devel: [type]
+        :param check_all: [description]
+        :type check_all: [type]
+        """
         rinse_bin_tests = self.tmp_path / \
             listdir(self.tmp_path)[0] / "rinse-bin" / "tests"
         chdir(str(rinse_bin_tests))
@@ -331,6 +379,11 @@ class LinuxInstallR(BaseInstallR):
                 shell=True)
 
     def global_interpreter(self, version):
+        """Set the R paths.
+
+        :param version: The R version.
+        :type version: int
+        """
         version_name = "R-%s" % version
         if Path(self.bin_path / "R").is_symlink():
             remove(str(self.bin_path / "R"))
@@ -368,18 +421,17 @@ class LinuxInstallR(BaseInstallR):
                     rmtree(str(self.tmp_path / Path("R-%s" % vrs)))
 
     def use_local(self):
-        raise NotImplementedError("Local installation is not supported at this time.")
+        raise NotImplementedError("Local installation is not yet supported.")
 
     def use_spack(self):
-        raise NotImplementedError(
-            "Installation with spack is not supported at this time.")
+        raise NotImplementedError("Installation with spack is not yet supported.")
 
 
 class MacInstallR(BaseInstallR):
 
     def __init__(self):
         raise NotImplementedError(
-            "Installation of R with rinse on MacOS is not supported at this time.")
+            "Installation of R with rinse on MacOS is not supported.")
 
 
 class WindowsInstallR(BaseInstallR):
@@ -387,13 +439,9 @@ class WindowsInstallR(BaseInstallR):
     def __init__(self, version, method, name, path, repos, glbl,
                  config_clear, config_keep, init, verbose):
         super().__init__(
-            path=path,
-            version=version,
-            repos=repos,
-            method=method,
-            name=name,
-            init=init,
-            verbose=verbose)
+            path=path, version=version, repos=repos,
+            method=method, name=name,
+            init=init, verbose=verbose)
         self.config_clear = config_clear
         self.config_keep = config_keep
         self.src_file_path = self.src_path
@@ -403,6 +451,15 @@ class WindowsInstallR(BaseInstallR):
             # self.global_interpreter(version=glbl)
 
     def _url_download(self, url, filepath, filename):
+        """Download and save the R exe file.
+
+        :param url: The url of the R exe.
+        :type url: str
+        :param filepath: The path to save the R exe to.
+        :type filepath: str
+        :param filename: The name of R exe file.
+        :type filename: str
+        """
         with open(filepath, "wb") as f:
             try:
                 self.logger.info("Downloading %s" % filename)
@@ -422,7 +479,7 @@ class WindowsInstallR(BaseInstallR):
                         sys.stdout.write("\r[%s%s] %d%% complete" %
                                          ('=' * half_done, ' ' * (50 - half_done), done))
                         sys.stdout.flush()
-
+            # If there is a keyboard interruption, roll back the download.
             except KeyboardInterrupt:
                 f.close()
                 remove(filepath)
@@ -433,6 +490,7 @@ class WindowsInstallR(BaseInstallR):
         self.logger.info("\n%s Downloaded Successfully" % filename)
 
     def _url_setup(self):
+        """Format the URL based on the R version."""
         if self.version == "latest":
             ver = self.get_versions()[0]
             self.version = ver
@@ -447,6 +505,11 @@ class WindowsInstallR(BaseInstallR):
         return url, filename
 
     def _install_exe(self, exe_file_path):
+        """Install the R exe file.
+
+        :param exe_file_path: [description]
+        :type exe_file_path: [type]
+        """
         # Check the temp directory if necessary
         self.clear_tmp_dir()
         # Run the R exe silently
@@ -455,6 +518,15 @@ class WindowsInstallR(BaseInstallR):
         system_cmd(cmd=cmd, stdout=sp.PIPE, stderr=sp.STDOUT, shell=True)
 
     def source_download(self, overwrite, with_rtools):
+        """Download the R exe.
+
+        :param overwrite: [description]
+        :type overwrite: [type]
+        :param with_rtools: [description]
+        :type with_rtools: boolean
+        :return: File path of exe download.
+        :rtype: str
+        """
         # Download the source exe
         url, file_name = self._url_setup()
         self.src_file_path = self.src_path / "cran" / Path(file_name)
@@ -469,6 +541,7 @@ class WindowsInstallR(BaseInstallR):
         return src_file_path
 
     def source_setup(self):
+        """Install the R exe and setup rinse folder."""
         # Install the R exe
         self._install_exe(exe_file_path=self.src_file_path)
         # Create rinse-bin for the configuration process
@@ -485,7 +558,7 @@ class WindowsInstallR(BaseInstallR):
             sys.exit(0)
 
     def clear_tmp_dir(self):
-        # Set up the temporary directory for installation
+        """Create the temporary directory for installation."""
         if self.config_clear[0] == "all":
             rmtree(str(self.tmp_path))
             self.tmp_path.mkdir(parents=True)
@@ -495,7 +568,7 @@ class WindowsInstallR(BaseInstallR):
                     rmtree(str(self.tmp_path / Path("R-%s" % vrs)))
 
     def create_rhome(self):
-        # Set up R_HOME
+        """Create the R_HOME path."""
         rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
         chdir(str(rinse_bin))
         r_home_name = Path(rinse_bin).parent.name
@@ -505,6 +578,7 @@ class WindowsInstallR(BaseInstallR):
             r_home.mkdir()
 
     def get_versions(self):
+        """Get versions of R."""
         url = 'https://cloud.r-project.org/bin/windows/base/old/'
 
         req = urllib.request.Request(url)
@@ -515,6 +589,7 @@ class WindowsInstallR(BaseInstallR):
         return versions
 
     def _download_rtools(self):
+        """Download Rtools."""
         rtools_exe = "Rtools{}.exe"
         base_url = "https://cran.r-project.org/bin/windows/Rtools/"
         if self.version >= "3.3":
@@ -541,6 +616,7 @@ class WindowsInstallR(BaseInstallR):
         return rtools_file_path
 
     def setup_rtools(self):
+        """Download and install Rtools."""
         rtools_file_path = self._download_rtools()
         # Install the Rtools exe
         self._install_exe(exe_file_path=rtools_file_path)

@@ -36,17 +36,18 @@ def get_system_installer():
     """
     Determine the proper R installation method to use based on the system.
     :return: A system dependent installation class that is uncalled.
+    :return: A string specifying the os
     """
     if osname == "posix":
         if sysplat == "darwin":
-            rinse.MacInstallR()
+            return rinse.MacInstallR, "mac"
         elif "linux" in str(sysplat):
-            return rinse.LinuxInstallR
+            return rinse.LinuxInstallR, "linux"
         else:
             raise OSError("rinse does not support the %s operating system at this time." % sysplat)
     elif osname == "nt":
         if sysplat == "win32":
-            rinse.WindowsInstallR()
+            return rinse.WindowsInstallR, "windows"
         else:
             raise OSError("rinse does not support the %s operating system at this time." % sysplat)
 

@@ -26,15 +26,16 @@ def rinse(ctx, repos, method, path, name):
         raise NotImplementedError("Rinse only supports installing into the home directory at this time.")
 
     # Get the system dependent installation class
-    installR = get_system_installer()
+    installR, os = get_system_installer()
     ctx.obj['installR'] = installR
+    ctx.obj['os'] = os
 
 
 @rinse.command(help="Initialize rinse using the /<path>/<name>.")
 @click.pass_context
 def init(ctx):
     # Initialize rinse
-    BaseInstallR(path=ctx.obj['path'], name=ctx.obj['name'], init=True)
+    BaseInstallR(path=ctx.obj['path'], name=ctx.obj['name'], init=True, os=ctx.obj['os'])
 
 
 @rinse.command(context_settings=dict(
@@ -75,13 +76,14 @@ def install(ctx, version, clear, without_make, check, installer, install_info,
             test_check_all, verbose):
     # Configure
     ctx.invoke(configure, version=version, clear=clear, verbose=verbose)
-    # Install
-    ctx.invoke(make, version=version, clear=clear, without_make=without_make,
-               check=check, installer=installer, install_info=install_info,
-               install_pdf=install_pdf, install_tests=install_tests)
-    # Test Installation
-    ctx.invoke(test, version=version, clear=clear, check=test_check,
-               check_devel=test_check_devel, check_all=test_check_all)
+    if ctx.obj['os'] != "windows":
+        # Install with make
+        ctx.invoke(make, version=version, clear=clear, without_make=without_make,
+                check=check, installer=installer, install_info=install_info,
+                install_pdf=install_pdf, install_tests=install_tests)
+        # Test Installation
+        ctx.invoke(test, version=version, clear=clear, check=test_check,
+                check_devel=test_check_devel, check_all=test_check_all)
 
 
 @rinse.command(context_settings=dict(
@@ -94,19 +96,30 @@ def install(ctx, version, clear, without_make, check, installer, install_info,
               help="Remove any files associated with previous attempts to install R.", show_default=True)
 @click.option("--overwrite-source", default=False,
               help="Download and overwrite the source tarball.", show_default=True)
+@click.option('--with-rtools', default=False, show_default=True,
+              help="Install Rtools with R. Windows ONLY!")
 @click.option('--verbose', '-v', is_flag=True,
               help="Show verbose cli output.")
 @click.pass_context
-def configure(ctx, version, clear, overwrite_source, verbose):
+def configure(ctx, version, clear, overwrite_source, with_rtools, verbose):
     installR = ctx.obj['installR']
     configure_opts = " ".join(ctx.args)
-    installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'],
-                        method="source", repos=ctx.obj['repos'],
-                        config_clear=clear, config_keep=version,
-                        glbl=None, init=False, verbose=verbose)
-    src_file_path = installR.source_download(overwrite=overwrite_source)
-    installR.source_setup(src_file_path=src_file_path)
-    installR.source_configure(configure_opts=configure_opts)
+    if ctx.obj['os'] == "windows":
+        installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'],
+                            method="source", repos=ctx.obj['repos'],
+                            config_clear=clear, config_keep=version,
+                            glbl=None, init=False, verbose=verbose)
+        src_file_path = installR.source_download(overwrite=overwrite_source, with_rtools=with_rtools)
+        installR.source_setup()
+        installR.create_rhome()
+    else:
+        installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'],
+                            method="source", repos=ctx.obj['repos'],
+                            config_clear=clear, config_keep=version,
+                            glbl=None, init=False, verbose=verbose)
+        src_file_path = installR.source_download(overwrite=overwrite_source)
+        installR.source_setup()
+        installR.source_configure(configure_opts=configure_opts)
 
 
 @rinse.command(help="Start running custom make commands for the installation.")
@@ -130,12 +143,15 @@ def configure(ctx, version, clear, overwrite_source, verbose):
 @click.pass_context
 def make(ctx, without_make, version, clear, check, installer, install_info, install_pdf, install_tests, verbose):
     installR = ctx.obj['installR']
-    installR = installR(version=version, path=ctx.obj['path'],
-                        name=ctx.obj['name'], method="source", repos=ctx.obj['repos'],
-                        config_clear=clear, config_keep=version, glbl=None,
-                        init=False, verbose=verbose)
-    installR.source_make(without_make=without_make, check=check, install=installer, install_info=install_info,
-                         install_pdf=install_pdf, install_tests=install_tests)
+    if ctx.obj['os'] == "windows":
+        click.echo('ERROR: Make is not supported for Windows.')
+    else:
+        installR = installR(version=version, path=ctx.obj['path'],
+                            name=ctx.obj['name'], method="source", repos=ctx.obj['repos'],
+                            config_clear=clear, config_keep=version, glbl=None,
+                            init=False, verbose=verbose)
+        installR.source_make(without_make=without_make, check=check, install=installer, install_info=install_info,
+                            install_pdf=install_pdf, install_tests=install_tests)
 
 
 @rinse.command(help="Start running various make installation tests.")
@@ -153,10 +169,13 @@ def make(ctx, without_make, version, clear, check, installer, install_info, inst
 @click.pass_context
 def test(ctx, version, clear, check, check_devel, check_all, verbose):
     installR = ctx.obj['installR']
-    installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'],
-                        method="source", repos=ctx.obj['repos'], config_clear=clear,
-                        config_keep=version, glbl=None, init=False, verbose=verbose)
-    installR.source_test(check=check, check_devel=check_devel, check_all=check_all)
+    if ctx.obj['os'] == "windows":
+        click.echo('ERROR: Tests are not supported for Windows.')
+    else:
+        installR = installR(version=version, path=ctx.obj['path'], name=ctx.obj['name'],
+                            method="source", repos=ctx.obj['repos'], config_clear=clear,
+                            config_keep=version, glbl=None, init=False, verbose=verbose)
+        installR.source_test(check=check, check_devel=check_devel, check_all=check_all)
 
 
 @rinse.command(name="global", help="Switch the global R version.")

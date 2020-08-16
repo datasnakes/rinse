@@ -3,11 +3,14 @@ name = "rinstall"
 version = "0.2.3"
 license = "MIT"
 description = "A configurable installer CLI for installing R from source (sudo and non-sudo)."
-authors = ["Rob Gilmore <robgilmore127@gmail.com>"]
+authors = ["Rob Gilmore <robgilmore127@gmail.com>", "Shaurita Hutchins"," Roshan Pawar", "Cedric Wang"]
 readme = 'README.md'
 repository = "https://github.com/datasnakes/rinse"
 homepage = "https://github.com/datasnakes/rinse"
 keywords = ['r', 'installation']
+packages = [
+    { include = "rinse", from = "." },
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -24,7 +27,7 @@ classifiers = [
     ]
 
 [tool.poetry.dependencies]
-python = ">=3.4"
+python = ">=3.5"
 click = "^7.0"
 cookiecutter = "^1.6"
 

@@ -235,7 +235,29 @@ class LinuxInstallR(BaseInstallR):
         # Extract the contents of the source tarball
         with tarfile.open(str(src_file_path)) as r_tar_file:
             self.logger.debug("Extracting source tarball.")
-            r_tar_file.extractall(path=str(self.tmp_path))
+            
+            import os
+            
+            def is_within_directory(directory, target):
+                
+                abs_directory = os.path.abspath(directory)
+                abs_target = os.path.abspath(target)
+            
+                prefix = os.path.commonprefix([abs_directory, abs_target])
+                
+                return prefix == abs_directory
+            
+            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+            
+                for member in tar.getmembers():
+                    member_path = os.path.join(path, member.name)
+                    if not is_within_directory(path, member_path):
+                        raise Exception("Attempted Path Traversal in Tar File")
+            
+                tar.extractall(path, members, numeric_owner=numeric_owner) 
+                
+            
+            safe_extract(r_tar_file, path=str(self.tmp_path))
 
         # Configure rinse-bin for the configuration process
         rinse_bin = self.tmp_path / listdir(self.tmp_path)[0] / "rinse-bin"
